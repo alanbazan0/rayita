@@ -16,12 +16,13 @@
  *
  *   (sin action)       extrae rayita_deploy/api.zip en rayita_api/ y lo borra
  *   action=write-env   POST con el contenido completo del .env de producción
- *   action=optimize    limpia y regenera la caché de config, rutas y vistas
+ *   action=optimize    limpia y regenera la caché de config y rutas
  *   action=migrate     php artisan migrate --force
  *   action=migrate-status
  *   action=logs        últimas N líneas de storage/logs (?lines=200)
  *   action=diag        pide GET /api/config al kernel y muestra el resultado
  *   action=set-env     POST name=INVITE_CODE&value=... (solo variables permitidas)
+ *   action=mail-test   ?to=correo@dominio.com envía un correo de prueba con el mailer de producción
  */
 
 $token = '__DEPLOY_TOKEN__';
@@ -30,6 +31,7 @@ $token = '__DEPLOY_TOKEN__';
 $apiDir = getenv('RAYITA_API_DIR') ?: __DIR__ . '/../rayita_api';
 $zipPath = getenv('RAYITA_ZIP') ?: __DIR__ . '/../rayita_deploy/api.zip';
 
+ob_start(); // si algo falla tras imprimir, aún se puede responder con código 500
 header('Content-Type: text/plain; charset=utf-8');
 header('X-Robots-Tag: noindex, nofollow');
 set_time_limit(180);
@@ -139,7 +141,7 @@ try {
             runArtisan($kernel, 'optimize:clear');
             runArtisan($kernel, 'config:cache');
             runArtisan($kernel, 'route:cache');
-            runArtisan($kernel, 'view:cache');
+            // Sin view:cache: la API no tiene vistas Blade (el correo usa HTML en línea).
             break;
 
         case 'migrate':
@@ -202,6 +204,21 @@ try {
             file_put_contents($envPath, implode("\n", $lines) . "\n");
             echo "ok: $name actualizado\n";
             runArtisan(artisanKernel($apiDir), 'config:cache');
+            break;
+
+        case 'mail-test':
+            $to = (string) ($_GET['to'] ?? '');
+            if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+                fail(422, 'indica ?to= con un correo válido');
+            }
+            artisanKernel($apiDir)->bootstrap();
+            echo 'mailer: ' . config('mail.default') . "\n";
+            echo 'remitente: ' . config('mail.from.address') . "\n";
+            \Illuminate\Support\Facades\Mail::raw(
+                "Correo de prueba de Rayita.\nSi lo ves, el servidor puede enviar mensajes.",
+                fn ($message) => $message->to($to)->subject('Prueba de correo de Rayita')
+            );
+            echo "enviado al mailer sin errores a $to (revisa también spam)\n";
             break;
 
         default:

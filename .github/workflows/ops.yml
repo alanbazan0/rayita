@@ -15,8 +15,9 @@ on:
           - optimize
           - logs
           - set-invite-code
+          - mail-test
       value:
-        description: 'set-invite-code: nuevo código (vacío = registro abierto)'
+        description: 'set-invite-code: nuevo código (vacío = registro abierto). mail-test: correo de destino'
         required: false
         type: string
 
@@ -37,6 +38,9 @@ jobs:
             curl -fsS -X POST -H "X-Deploy-Token: $DEPLOY_TOKEN" \
               --data-urlencode "name=INVITE_CODE" --data-urlencode "value=$VALUE" \
               "$WEB_URL/deploy.php?action=set-env"
+          elif [ "$ACTION" = "mail-test" ]; then
+            curl -fsS -G -H "X-Deploy-Token: $DEPLOY_TOKEN" \
+              --data-urlencode "action=mail-test" --data-urlencode "to=$VALUE" "$WEB_URL/deploy.php"
           else
             curl -fsS -H "X-Deploy-Token: $DEPLOY_TOKEN" "$WEB_URL/deploy.php?action=$ACTION"
           fi
