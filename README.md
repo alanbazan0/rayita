@@ -6,7 +6,7 @@ Rastreador de hábitos con **calendario**, **rachas** y **conteo con palitos** (
 tachadas de a cinco). Marca cada día como cumplido o parcial, mira crecer tus marcas y
 ponle una meta a cada hábito, por ejemplo *"No fumar durante 10 días"*.
 
-Tiene una API en Laravel y una **app móvil en Flutter para Android e iOS**, en español e
+Tiene una API en Laravel y una **app móvil en Flutter para Android**, en español e
 inglés (se elige solo según el idioma del sistema y se puede cambiar en la app). La versión
 web de Flutter es para pruebas: se publica, pero sin difundir el enlace a los usuarios.
 
@@ -40,7 +40,7 @@ web de Flutter es para pruebas: se publica, pero sin difundir el enlace a los us
   - barra de avance, "faltan N días" y estado *lograda / no lograda*.
 - **Días activos** por hábito (por ejemplo solo de lunes a viernes). Un día inactivo no se puede
   marcar, no rompe la racha y no cuenta para la meta.
-- **Inicio de sesión con Google** (web, Android e iOS) además del correo; ver [docs/GOOGLE_LOGIN.md](docs/GOOGLE_LOGIN.md).
+- **Inicio de sesión con Google** (web y Android) además del correo; ver [docs/GOOGLE_LOGIN.md](docs/GOOGLE_LOGIN.md).
 - **Cuenta de usuario** con registro, confirmación de contraseña y **verificación de correo con
   código de 6 dígitos** (vence en 15 minutos, 5 intentos, reenvío cada 60 s).
 - **Idiomas**: español e inglés, tanto en la app como en los mensajes de la API.
@@ -100,7 +100,7 @@ todos. No afecta a quien ya tiene cuenta.
 ```bash
 cd app
 flutter pub get
-flutter run                 # en un emulador o dispositivo Android / iOS
+flutter run                 # en un emulador o dispositivo Android
 flutter run -d chrome       # opcional: vista previa rápida en el navegador (solo desarrollo)
 ```
 
@@ -143,8 +143,13 @@ El idioma de los mensajes se toma del encabezado `Accept-Language` (`es` por def
   (`rayita.alanbazan.com.mx` y `api.rayita.alanbazan.com.mx`). Se despliegan por FTP con GitHub
   Actions (o con `./deploy.sh`) y un `deploy.php` protegido por token extrae, migra y consulta logs
   sin SSH. Guía en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). La web no se indexa en buscadores, y el
-  registro pide un código de invitación. La app móvil se distribuirá por Google Play y App Store.
+  registro pide un código de invitación. La app móvil se distribuirá por Google Play (iOS y la App Store quedan para más adelante).
 - **Correo en producción:** los códigos salen por el `sendmail` del servidor desde `rayita@alanbazan.com.mx`; falta comprobar que lleguen a la bandeja (SPF/DKIM) y, si hace falta, pasar a SMTP con los secretos `MAIL_*`.
-- **Android e iOS:** las plataformas y los íconos están configurados, pero la interfaz solo se ha
-  probado hasta ahora en el modo web de desarrollo; falta probarla en emuladores o dispositivos.
+- **Android:** la plataforma y los íconos están configurados, pero la interfaz solo se ha probado
+  hasta ahora en el modo web de desarrollo; falta probarla en un emulador o dispositivo.
+- **iOS:** descartado por ahora. El proyecto nativo sigue ahí por si se retoma.
+- **Políticas legales:** [privacidad](https://rayita.alanbazan.com.mx/privacidad) y
+  [términos](https://rayita.alanbazan.com.mx/terminos) (también en inglés: `/privacy` y `/terms`),
+  que Google Cloud y Google Play piden como enlaces públicos. Falta crear el buzón `rayita@alanbazan.com.mx`
+  que aparece como contacto y habilitar la eliminación de la cuenta dentro de la app.
 - Más adelante, cuando la app esté probada: quitar el correo y la contraseña y dejar solo Google (el código ya lo permite).

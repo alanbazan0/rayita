@@ -5,7 +5,7 @@ Funciona igual que en Noxa: la app obtiene un **ID token** de Google y lo manda 
 (JWKS) y responde con su propia sesión (token de Sanctum).
 
 ```
-App (web / Android / iOS) ──ID token──▶ API /google ──verifica firma, audiencia, vigencia──▶ sesión
+App (web / Android) ──ID token──▶ API /google ──verifica firma, audiencia, vigencia──▶ sesión
 ```
 
 - La cuenta se crea (o se vincula por correo) ya **verificada**: no pide el código por correo.
@@ -27,8 +27,8 @@ App (web / Android / iOS) ──ID token──▶ API /google ──verifica fir
 4. **Clientes → Crear cliente → Android**: paquete `com.rayita.app` y la huella **SHA-1**.
    - Debug: `keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore -storepass android -keypass android | grep SHA1`
    - Producción: la SHA-1 de *Play Console → Integridad de la app → Firma de apps* (otro cliente Android).
-5. **Clientes → Crear cliente → iOS**: Bundle ID `com.rayita.app`. Copia el **ID de cliente de iOS**
-   (`GOOGLE_IOS_CLIENT_ID`) y su valor invertido (ver abajo).
+5. **iOS: descartado por ahora.** Si se retoma: cliente iOS con Bundle ID `com.rayita.app`, su ID en
+   `GOOGLE_IOS_CLIENT_ID` y el esquema de URL de abajo.
 
 ## Activarlo en el servidor
 
@@ -41,20 +41,12 @@ Los IDs de cliente son públicos. Tres formas, de menos a más trabajo:
   del servidor, así que lo puesto con `set-google-client-id` se pierde en el siguiente despliegue.
 - **En local**: `GOOGLE_CLIENT_ID=…` en `backend/.env`.
 
-## iOS: esquema de URL (una vez, con el ID de iOS)
+## iOS (descartado por ahora)
 
-En `app/ios/Runner/Info.plist` agrega el ID invertido como esquema de URL. Si el ID es
-`123-abc.apps.googleusercontent.com`, el esquema es `com.googleusercontent.apps.123-abc`:
-
-```xml
-<key>CFBundleURLTypes</key>
-<array>
-  <dict>
-    <key>CFBundleURLSchemes</key>
-    <array><string>com.googleusercontent.apps.123-abc</string></array>
-  </dict>
-</array>
-```
+Si algún día se retoma, en `app/ios/Runner/Info.plist` hay que agregar el ID de cliente de iOS invertido
+como esquema de URL (`123-abc.apps.googleusercontent.com` → `com.googleusercontent.apps.123-abc`) dentro de
+`CFBundleURLTypes`, y cargar el ID con la acción `set-google-ios-client-id` o el secreto
+`GOOGLE_IOS_CLIENT_ID`.
 
 ## Probar en local (web)
 
