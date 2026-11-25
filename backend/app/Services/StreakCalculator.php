@@ -58,6 +58,36 @@ class StreakCalculator
         return ['current' => $current, 'longest' => $longest];
     }
 
+    /**
+     * Primer día de la racha actual (la misma que calcula calculate()), o null si no hay.
+     *
+     * @param  iterable<string>  $dates  Fechas Y-m-d marcadas como cumplidas.
+     * @param  list<int>  $activeDays
+     */
+    public function currentStreakStart(iterable $dates, CarbonImmutable $today, array $activeDays = self::ALL_DAYS): ?string
+    {
+        $set = [];
+        foreach ($dates as $date) {
+            if ($this->isActive($date, $activeDays)) {
+                $set[$date] = true;
+            }
+        }
+
+        // La racha sigue viva si hoy ya se marcó o si el último día activo anterior se cumplió.
+        $cursor = $today->startOfDay()->toDateString();
+        if (! isset($set[$cursor])) {
+            $cursor = $this->previousActive($cursor, $activeDays);
+        }
+
+        $start = null;
+        while (isset($set[$cursor])) {
+            $start = $cursor;
+            $cursor = $this->previousActive($cursor, $activeDays);
+        }
+
+        return $start;
+    }
+
     /** @param  list<int>  $activeDays */
     public function isActive(string $date, array $activeDays): bool
     {

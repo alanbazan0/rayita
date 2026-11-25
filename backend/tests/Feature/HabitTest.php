@@ -241,4 +241,80 @@ class HabitTest extends TestCase
         $this->putJson("/api/habits/$id", ['active_days' => [1, 2, 3, 4, 5]])
             ->assertOk()->assertJsonPath('data.goal_days', 10);
     }
+
+    public function test_meta_por_dias_nueva_empieza_hoy_segun_el_cliente(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->postJson('/api/habits', ['name' => 'No fumar', 'goal_days' => 10, 'today' => '2026-11-24'])
+            ->assertCreated()
+            ->assertJsonPath('data.goal_start', '2026-11-24')
+            ->assertJsonPath('data.goal_days', 10);
+    }
+
+    public function test_meta_por_dias_sin_inicio_arranca_en_la_racha_actual(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $habit = Habit::factory()->for($user)->create();
+        foreach (['2026-11-22', '2026-11-23'] as $date) {
+            $habit->logs()->create(['date' => $date, 'status' => 'done']);
+        }
+
+        // Dos días de racha ya cumplidos: la meta debe contarlos (2 de 10).
+        $this->putJson("/api/habits/{$habit->id}", ['goal_days' => 10, 'today' => '2026-11-24'])
+            ->assertOk()
+            ->assertJsonPath('data.goal_start', '2026-11-22');
+
+        $this->getJson("/api/habits/{$habit->id}/stats?today=2026-11-24")
+            ->assertJsonPath('goal.progress', 2)
+            ->assertJsonPath('goal.target', 10);
+    }
+
+    public function test_meta_por_dias_sin_racha_viva_empieza_hoy(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $habit = Habit::factory()->for($user)->create();
+        $habit->logs()->create(['date' => '2026-11-10', 'status' => 'done']); // racha ya perdida
+
+        $this->putJson("/api/habits/{$habit->id}", ['goal_days' => 10, 'today' => '2026-11-24'])
+            ->assertOk()
+            ->assertJsonPath('data.goal_start', '2026-11-24');
+    }
+
+    public function test_el_inicio_explicito_de_la_meta_se_respeta(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $habit = Habit::factory()->for($user)->create();
+        $habit->logs()->create(['date' => '2026-11-23', 'status' => 'done']);
+
+        $this->putJson("/api/habits/{$habit->id}", ['goal_days' => 10, 'goal_start' => '2026-11-24', 'today' => '2026-11-24'])
+            ->assertOk()
+            ->assertJsonPath('data.goal_start', '2026-11-24');
+    }
+
+    public function test_el_inicio_por_racha_respeta_los_dias_activos(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $habit = Habit::factory()->for($user)->create(['active_days' => [1, 2, 3, 4, 5]]);
+        // Jueves 26 y viernes 27; el lunes 30 es hoy y aún no se marca.
+        foreach (['2026-11-26', '2026-11-27'] as $date) {
+            $habit->logs()->create(['date' => $date, 'status' => 'done']);
+        }
+
+        $this->putJson("/api/habits/{$habit->id}", ['goal_days' => 5, 'today' => '2026-11-30'])
+            ->assertOk()
+            ->assertJsonPath('data.goal_start', '2026-11-26');
+    }
+
+    public function test_today_invalido_se_rechaza(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->postJson('/api/habits', ['name' => 'X', 'today' => 'ayer'])
+            ->assertUnprocessable()->assertJsonValidationErrors('today');
+    }
 }

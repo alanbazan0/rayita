@@ -21,6 +21,8 @@ class HabitRequest extends FormRequest
             'icon' => ['nullable', 'string', 'max:50'],
             'active_days' => ['nullable', 'array', 'min:1'],
             'active_days.*' => ['integer', 'between:1,7', 'distinct'],
+            // Día local del cliente (AAAA-MM-DD); evita errores por la zona horaria del servidor.
+            'today' => ['sometimes', 'date_format:Y-m-d'],
             'goal_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'goal_start' => ['nullable', 'date_format:Y-m-d'],
             'goal_end' => ['nullable', 'date_format:Y-m-d'],
@@ -36,7 +38,7 @@ class HabitRequest extends FormRequest
             if (! $end || $validator->errors()->hasAny(['goal_start', 'goal_end', 'active_days', 'active_days.*'])) {
                 return;
             }
-            $start ??= now()->toDateString();
+            $start ??= $this->today();
 
             if ($end < $start) {
                 $validator->errors()->add('goal_end', __('La fecha final debe ser igual o posterior a la inicial.'));
@@ -60,6 +62,27 @@ class HabitRequest extends FormRequest
         $habit = $this->route('habit');
 
         return $habit instanceof Habit ? $habit->activeDays() : StreakCalculator::ALL_DAYS;
+    }
+
+    /** Hoy según el cliente (o el servidor si no lo manda). */
+    private function today(): string
+    {
+        return (string) ($this->input('today') ?: now()->toDateString());
+    }
+
+    /** Primer día de la racha actual del hábito que se edita, o hoy si no hay racha. */
+    private function streakStartOrToday(mixed $habit): string
+    {
+        $today = $this->today();
+        if (! $habit instanceof Habit) {
+            return $today;
+        }
+
+        $dates = $habit->logs()->done()->get()->map(fn ($log) => $log->date->toDateString());
+        $activeDays = $this->effectiveActiveDays();
+
+        return app(StreakCalculator::class)
+            ->currentStreakStart($dates, CarbonImmutable::parse($today), $activeDays) ?? $today;
     }
 
     /** Cuántos días activos hay entre dos fechas (inclusive). */
@@ -86,6 +109,7 @@ class HabitRequest extends FormRequest
     public function habitData(): array
     {
         $data = $this->validated();
+        unset($data['today']); // solo sirve para calcular fechas; no es un campo del hábito
 
         if (array_key_exists('active_days', $data)) {
             $days = array_values(array_unique(array_map('intval', $data['active_days'] ?? [])));
@@ -114,7 +138,9 @@ class HabitRequest extends FormRequest
             return [...$data, 'goal_days' => null, 'goal_start' => null, 'goal_end' => null, 'goal_on_fail' => null];
         }
 
-        $start ??= now()->toDateString();
+        // Sin inicio explícito: una meta por días empieza donde empieza la racha actual (para que
+        // los días ya cumplidos cuenten); si no hay racha, o es un rango de fechas, empieza hoy.
+        $start ??= $end === null ? $this->streakStartOrToday($habit) : $this->today();
         if ($end !== null) {
             $days = $this->countActiveDays($start, $end);
         }
