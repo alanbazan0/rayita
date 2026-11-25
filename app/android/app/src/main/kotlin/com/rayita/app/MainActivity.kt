@@ -1,4 +1,4 @@
-package com.calendarcheck.calendar_check
+package com.rayita.app
 
 import io.flutter.embedding.android.FlutterActivity
 
