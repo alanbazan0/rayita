@@ -1,6 +1,9 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # Páginas legales con URL limpia: /privacidad, /terminos, /privacy y /terms.
+  RewriteRule ^(privacidad|terminos|privacy|terms)/?$ /$1.html [L]
+
   # Flutter web (SPA): cualquier ruta que no sea un archivo o carpeta va a index.html.
   # OJO: sin reglas de /api aquí; la API vive en api.rayita.alanbazan.com.mx
   # (otro subdominio). Mezclarlas causó un error 500 en Noxa.
@@ -12,6 +15,10 @@
 <IfModule mod_headers.c>
   # Web de pruebas: que los buscadores no la indexen aunque alguien encuentre el enlace.
   Header set X-Robots-Tag "noindex, nofollow, noarchive"
+  # Las páginas legales sí deben poder leerse (Google Cloud y Play las revisan).
+  <FilesMatch "^(privacidad|terminos|privacy|terms)\.html$">
+    Header unset X-Robots-Tag
+  </FilesMatch>
 
   # Estos archivos no llevan hash en el nombre; "no-store" evita que Chrome
   # se quede con una versión vieja después de un despliegue.

@@ -1,2 +1,7 @@
+# La web es de pruebas: no se indexa, salvo las páginas legales.
 User-agent: *
+Allow: /privacidad
+Allow: /terminos
+Allow: /privacy
+Allow: /terms
 Disallow: /
