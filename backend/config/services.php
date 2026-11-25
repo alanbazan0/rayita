@@ -28,6 +28,13 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Inicio de sesión con Google. El client ID "web" también se usa como serverClientId
+    // en Android/iOS, así que es la audiencia de todos los ID tokens. No hay client secret.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'ios_client_id' => env('GOOGLE_IOS_CLIENT_ID'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

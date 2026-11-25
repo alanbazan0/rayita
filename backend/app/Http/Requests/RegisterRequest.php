@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Services\InviteCode;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -16,12 +17,11 @@ class RegisterRequest extends FormRequest
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
             // Solo se exige si el servidor tiene INVITE_CODE configurado.
             'invite_code' => [
-                Rule::requiredIf(fn () => filled(config('registration.invite_code'))),
+                Rule::requiredIf(fn () => InviteCode::required()),
                 'nullable',
                 'string',
                 function (string $attribute, mixed $value, \Closure $fail) {
-                    $expected = (string) config('registration.invite_code');
-                    if ($expected !== '' && ! hash_equals($expected, trim((string) $value))) {
+                    if (InviteCode::required() && ! InviteCode::accepts($value)) {
                         $fail(__('El código de invitación no es válido.'));
                     }
                 },

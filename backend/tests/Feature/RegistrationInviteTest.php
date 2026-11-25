@@ -27,7 +27,7 @@ class RegistrationInviteTest extends TestCase
 
         $this->getJson('/api/config')
             ->assertOk()
-            ->assertExactJson(['registration' => ['requires_invite_code' => false]]);
+            ->assertJsonPath('registration.requires_invite_code', false);
     }
 
     public function test_config_indica_que_hay_codigo_si_esta_configurado(): void

@@ -44,5 +44,8 @@
     "Los días activos deben ir del 1 (lunes) al 7 (domingo).": "Active days must go from 1 (Monday) to 7 (Sunday).",
     "Los días activos no pueden repetirse.": "Active days can't repeat.",
     "El código de invitación es obligatorio.": "The invitation code is required.",
-    "El código de invitación no es válido.": "The invitation code is not valid."
+    "El código de invitación no es válido.": "The invitation code is not valid.",
+    "Falta el token de Google.": "The Google token is missing.",
+    "No se pudo verificar tu cuenta de Google.": "We couldn't verify your Google account.",
+    "El inicio de sesión con Google no está disponible.": "Google sign-in is not available."
 }
