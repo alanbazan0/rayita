@@ -1,0 +1,235 @@
+{
+  "@@locale": "es",
+  "appTitle": "Calendar Check",
+  "signIn": "Inicia sesión",
+  "createYourAccount": "Crea tu cuenta",
+  "name": "Nombre",
+  "email": "Correo",
+  "password": "Contraseña",
+  "validationName": "Escribe tu nombre.",
+  "validationEmail": "Escribe un correo válido.",
+  "validationPassword": "Mínimo 8 caracteres.",
+  "register": "Registrarme",
+  "enter": "Entrar",
+  "haveAccount": "Ya tengo cuenta",
+  "createAccount": "Crear una cuenta",
+  "myHabits": "Mis hábitos",
+  "logout": "Cerrar sesión",
+  "newHabit": "Nuevo hábito",
+  "noHabits": "Aún no tienes hábitos.\nCrea el primero con el botón de abajo.",
+  "retry": "Reintentar",
+  "editHabit": "Editar hábito",
+  "deleteHabit": "Eliminar hábito",
+  "deleteHabitTitle": "¿Eliminar hábito?",
+  "deleteHabitBody": "Se borrará \"{name}\" junto con todas sus marcas.",
+  "@deleteHabitBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "save": "Guardar",
+  "create": "Crear",
+  "habitNameLabel": "Nombre (ej. Ir al gym)",
+  "color": "Color",
+  "iconOptional": "Ícono (opcional)",
+  "iconSemantic": "Ícono {name}",
+  "@iconSemantic": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "previousMonth": "Mes anterior",
+  "nextMonth": "Mes siguiente",
+  "tapDayHint": "Toca un día para marcarlo: cumplido, parcial o sin marca.",
+  "currentStreak": "Racha actual",
+  "longestStreak": "Racha más larga",
+  "thisMonth": "Este mes",
+  "total": "Total",
+  "doneCount": "{count, plural, =1{1 cumplido} other{{count} cumplidos}}",
+  "@doneCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "partialCount": "{count, plural, =1{1 parcial} other{{count} parciales}}",
+  "@partialCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noMarks": "Sin marcas",
+  "marksCount": "{count, plural, =1{1 marca} other{{count} marcas}}",
+  "@marksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statusNone": "sin marca",
+  "statusDone": "cumplido",
+  "statusPartial": "parcial",
+  "weekdayInitials": "L,M,M,J,V,S,D",
+  "errorConnection": "No se pudo conectar con el servidor.",
+  "errorUnexpected": "Ocurrió un error inesperado.",
+  "language": "Idioma",
+  "languageSystem": "Automático",
+  "tagline": "Construye hábitos, un día a la vez.",
+  "todayLabel": "Hoy",
+  "todayProgress": "{done} de {total} cumplidos",
+  "@todayProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "streakDays": "{count, plural, =1{1 día} other{{count} días}}",
+  "@streakDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "markToday": "Marcar hoy",
+  "unmarkToday": "Quitar la marca de hoy",
+  "doneWord": "{count, plural, =1{cumplido} other{cumplidos}}",
+  "@doneWord": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "confirmPassword": "Confirmar contraseña",
+  "validationPasswordMatch": "Las contraseñas no coinciden.",
+  "verifyTitle": "Verifica tu correo",
+  "verifySubtitle": "Enviamos un código de 6 dígitos a {email}.",
+  "@verifySubtitle": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "codeLabel": "Código de verificación",
+  "validationCode": "Escribe el código de 6 dígitos.",
+  "verifyButton": "Verificar",
+  "resendCode": "Reenviar código",
+  "resendIn": "Reenviar en {seconds} s",
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "codeSent": "Te enviamos un nuevo código.",
+  "useAnotherAccount": "Usar otra cuenta",
+  "checkSpam": "Si no lo ves, revisa la carpeta de spam.",
+  "goalSection": "Meta (opcional)",
+  "goalEnable": "Definir una meta",
+  "goalByDays": "Por días",
+  "goalByDates": "Por fechas",
+  "goalDaysLabel": "Número de días",
+  "goalStartLabel": "Inicio",
+  "goalEndLabel": "Fin",
+  "goalOnFail": "Si fallas un día",
+  "goalReset": "Reiniciar",
+  "goalAccumulate": "Acumular",
+  "goalResetHint": "El conteo vuelve a empezar desde 0.",
+  "goalAccumulateHint": "Cuentan los días cumplidos, aunque no sean seguidos.",
+  "goalProgress": "{progress} / {target} días",
+  "@goalProgress": {
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "goalAchieved": "¡Meta lograda! 🎉",
+  "goalFailed": "Meta no lograda",
+  "goalDaysLeft": "{count, plural, =0{Último día} =1{Queda 1 día} other{Quedan {count} días}}",
+  "@goalDaysLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalTitle": "Meta",
+  "validationGoalDays": "Escribe los días (1 a 3650).",
+  "validationGoalDates": "Elige las fechas de inicio y fin.",
+  "validationGoalRange": "El fin debe ser igual o posterior al inicio.",
+  "pickDate": "Elegir fecha",
+  "activeDays": "Días activos",
+  "activeDaysHint": "Solo estos días cuentan; los demás no rompen la racha.",
+  "inactiveDayHint": "Ese día no está activo para este hábito. Cambia los días en Editar para marcarlo.",
+  "notToday": "Hoy no toca",
+  "habitSince": "Desde el {date}",
+  "goalPeriodFrom": "Desde el {date}",
+  "goalPeriodRange": "Del {start} al {end}",
+  "@habitSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@goalPeriodFrom": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@goalPeriodRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "goalRemaining": "{count, plural, =1{Falta 1 día} other{Faltan {count} días}}",
+  "@goalRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "doneToday": "Cumplidos hoy",
+  "bestStreak": "Mejor racha",
+  "streakLabel": "{count, plural, =1{día de racha} other{días de racha}}",
+  "@streakLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "welcome": "Bienvenido",
+  "haveAccountQuestion": "¿Ya tienes cuenta?",
+  "noAccountQuestion": "¿No tienes cuenta?",
+  "welcomeSubtitle": "Marca cada día, mira crecer tus rayitas y construye hábitos que duran."
+}

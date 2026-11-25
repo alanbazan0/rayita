@@ -1,0 +1,36 @@
+{
+    "name": "Calendar Check",
+    "short_name": "Calendar Check",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#5C5EDD",
+    "theme_color": "#5C5EDD",
+    "description": "Rastreador de hábitos con calendario, rachas y conteo con palitos.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "lang": "es",
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
