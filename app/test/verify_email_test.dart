@@ -58,6 +58,10 @@ void main() {
   late ProviderContainer container;
 
   Future<void> pumpScreen(WidgetTester tester) async {
+    // Pantalla alta de teléfono: la ilustración y el formulario no caben en 800x600.
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
     api = FakeApi();
     container = ProviderContainer(
       overrides: [apiProvider.overrideWithValue(api)],

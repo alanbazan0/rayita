@@ -9,9 +9,9 @@ import '../core/api.dart';
 import '../core/locale.dart';
 import '../core/models.dart';
 import '../core/providers.dart';
-import '../core/theme.dart';
-import '../widgets/language_button.dart';
+import '../widgets/auth_widgets.dart';
 import '../widgets/ui.dart';
+import '../widgets/welcome_scene.dart';
 
 /// Pantalla de código de 6 dígitos: se muestra hasta que el correo se verifica.
 class VerifyEmailScreen extends ConsumerStatefulWidget {
@@ -97,168 +97,146 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     final theme = Theme.of(context);
     final l = context.l10n;
     final canResend = _cooldown <= 0 && !_resending && !_busy;
+    const navy = WelcomeColors.navy;
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: primaryGradient,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(40),
-                ),
-              ),
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
-                  child: Column(
-                    children: [
-                      const Align(
-                        alignment: Alignment.centerRight,
-                        child: RoundAction(child: LanguageButton()),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        width: 84,
-                        height: 84,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(26),
-                          boxShadow: softShadow(0.2),
-                        ),
-                        child: const Icon(
-                          Icons.mark_email_read_outlined,
-                          size: 44,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Text(
-                        l.verifyTitle,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        l.verifySubtitle(widget.user.email),
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                      ),
-                    ],
+      backgroundColor: WelcomeColors.cream,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Align(
+                    alignment: Alignment.centerRight,
+                    child: PlainLanguageButton(),
                   ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: FadeSlideIn(
-                  child: AppCard(
-                    padding: const EdgeInsets.all(22),
+                  const Center(
+                    child: SizedBox(width: 220, child: WelcomeScene()),
+                  ),
+                  const SizedBox(height: 12),
+                  FadeSlideIn(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        TextField(
-                          controller: _code,
-                          autofocus: true,
-                          keyboardType: TextInputType.number,
-                          textAlign: TextAlign.center,
-                          maxLength: 6,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          autofillHints: const [AutofillHints.oneTimeCode],
-                          style: const TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 12,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: l.codeLabel,
-                            counterText: '',
-                          ),
-                          onChanged: (v) {
-                            if (_error != null) setState(() => _error = null);
-                            if (v.length == 6) _verify();
-                          },
-                          onSubmitted: (_) => _verify(),
-                        ),
-                        if (_error != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            _error!,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: theme.colorScheme.error),
-                          ),
-                        ] else if (_sentNotice) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            l.codeSent,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 18),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size.fromHeight(52),
-                          ),
-                          onPressed: _busy ? null : _verify,
-                          child: _busy
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : Text(l.verifyButton),
-                        ),
-                        TextButton(
-                          onPressed: canResend ? _resend : null,
-                          child: Text(
-                            _cooldown > 0
-                                ? l.resendIn(_cooldown)
-                                : l.resendCode,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
                         Text(
-                          l.checkSpam,
+                          l.verifyTitle,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: AppColors.muted,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: navy,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const Divider(height: 28),
-                        TextButton(
-                          onPressed: _busy
-                              ? null
-                              : () => ref.read(authProvider.notifier).logout(),
-                          child: Text(l.useAnotherAccount),
+                        const SizedBox(height: 8),
+                        Text(
+                          l.verifySubtitle(widget.user.email),
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: navy.withValues(alpha: 0.75),
+                            height: 1.35,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: _code,
+                    autofocus: true,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    maxLength: 6,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    autofillHints: const [AutofillHints.oneTimeCode],
+                    style: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 12,
+                      color: navy,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: l.codeLabel,
+                      counterText: '',
+                    ),
+                    onChanged: (v) {
+                      if (_error != null) setState(() => _error = null);
+                      if (v.length == 6) _verify();
+                    },
+                    onSubmitted: (_) => _verify(),
+                  ),
+                  if (_error != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _error!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: theme.colorScheme.error),
+                    ),
+                  ] else if (_sentNotice) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      l.codeSent,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: navy,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  NavyButton(
+                    label: l.verifyButton,
+                    busy: _busy,
+                    onPressed: _busy ? null : _verify,
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: canResend ? _resend : null,
+                    style: TextButton.styleFrom(
+                      foregroundColor: navy,
+                      disabledForegroundColor: navy.withValues(alpha: 0.5),
+                    ),
+                    child: Text(
+                      _cooldown > 0 ? l.resendIn(_cooldown) : l.resendCode,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  Text(
+                    l.checkSpam,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: navy.withValues(alpha: 0.6),
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: InkWell(
+                      onTap: _busy
+                          ? null
+                          : () => ref.read(authProvider.notifier).logout(),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          l.useAnotherAccount,
+                          style: const TextStyle(
+                            color: navy,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
