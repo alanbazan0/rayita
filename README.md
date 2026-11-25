@@ -137,12 +137,12 @@ El idioma de los mensajes se toma del encabezado `Accept-Language` (`es` por def
 ## Estado y pendientes
 
 - La app y la API funcionan completas en local.
-- **Despliegue (listo, sin ejecutar todavía):** API y web de pruebas en subdominios de HostGator
-  (`rayita_app/` y `rayita_api/`), por FTP con GitHub Actions o con `./deploy.sh`, y un
-  `deploy.php` protegido por token para extraer, migrar y consultar logs sin SSH. Falta cargar los
-  secretos y hacer el primer despliegue; la guía está en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-  La web no se indexa en buscadores. La app móvil se distribuirá por Google Play y App Store.
-- **Correo en producción:** falta crear la cuenta de correo del hosting; sus datos van en los secretos `MAIL_*`.
+- **Despliegue:** la API y la web de pruebas están en HostGator, en dos subdominios
+  (`rayita.alanbazan.com.mx` y `api.rayita.alanbazan.com.mx`). Se despliegan por FTP con GitHub
+  Actions (o con `./deploy.sh`) y un `deploy.php` protegido por token extrae, migra y consulta logs
+  sin SSH. Guía en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). La web no se indexa en buscadores, y el
+  registro pide un código de invitación. La app móvil se distribuirá por Google Play y App Store.
+- **Correo en producción:** los códigos salen por el `sendmail` del servidor desde `rayita@alanbazan.com.mx`; falta comprobar que lleguen a la bandeja (SPF/DKIM) y, si hace falta, pasar a SMTP con los secretos `MAIL_*`.
 - **Android e iOS:** las plataformas y los íconos están configurados, pero la interfaz solo se ha
   probado hasta ahora en el modo web de desarrollo; falta probarla en emuladores o dispositivos.
 - Más adelante: sustituir correo y contraseña por inicio de sesión con Google.
