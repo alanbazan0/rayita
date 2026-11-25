@@ -21,6 +21,39 @@ class User {
   );
 }
 
+/// Ajustes públicos del servidor (GET /config).
+class AppConfig {
+  const AppConfig({
+    this.requiresInviteCode = false,
+    this.googleWebClientId,
+    this.googleIosClientId,
+  });
+
+  static const empty = AppConfig();
+
+  final bool requiresInviteCode;
+
+  /// Client ID "web" de Google: audiencia del token y serverClientId en móvil.
+  final String? googleWebClientId;
+  final String? googleIosClientId;
+
+  /// El botón de Google solo se muestra si el servidor tiene Google configurado.
+  bool get googleEnabled =>
+      googleWebClientId != null && googleWebClientId!.isNotEmpty;
+
+  factory AppConfig.fromJson(Map<String, dynamic> j) {
+    final registration = j['registration'];
+    final google = j['google'];
+    String? id(Object? v) => v is String && v.isNotEmpty ? v : null;
+    return AppConfig(
+      requiresInviteCode:
+          registration is Map && registration['requires_invite_code'] == true,
+      googleWebClientId: google is Map ? id(google['web_client_id']) : null,
+      googleIosClientId: google is Map ? id(google['ios_client_id']) : null,
+    );
+  }
+}
+
 const allWeekdays = [1, 2, 3, 4, 5, 6, 7];
 
 class Habit {

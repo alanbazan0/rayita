@@ -745,6 +745,36 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Escribe el código de invitación.'**
   String get validationInviteCode;
+
+  /// No description provided for @continueWithGoogle.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar con Google'**
+  String get continueWithGoogle;
+
+  /// No description provided for @orDivider.
+  ///
+  /// In es, this message translates to:
+  /// **'o'**
+  String get orDivider;
+
+  /// No description provided for @googleInviteBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Para crear tu cuenta con Google necesitas un código de invitación.'**
+  String get googleInviteBody;
+
+  /// No description provided for @continueLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get continueLabel;
+
+  /// No description provided for @googleFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo iniciar sesión con Google.'**
+  String get googleFailed;
 }
 
 class _AppLocalizationsDelegate

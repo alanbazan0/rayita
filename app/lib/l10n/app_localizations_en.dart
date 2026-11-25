@@ -420,4 +420,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validationInviteCode => 'Enter the invitation code.';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get orDivider => 'or';
+
+  @override
+  String get googleInviteBody =>
+      'To create your account with Google you need an invitation code.';
+
+  @override
+  String get continueLabel => 'Continue';
+
+  @override
+  String get googleFailed => 'Couldn\'t sign in with Google.';
 }

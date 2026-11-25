@@ -235,5 +235,10 @@
   "viewCards": "Vista de tarjetas",
   "viewList": "Vista de lista",
   "inviteCode": "Código de invitación",
-  "validationInviteCode": "Escribe el código de invitación."
+  "validationInviteCode": "Escribe el código de invitación.",
+  "continueWithGoogle": "Continuar con Google",
+  "orDivider": "o",
+  "googleInviteBody": "Para crear tu cuenta con Google necesitas un código de invitación.",
+  "continueLabel": "Continuar",
+  "googleFailed": "No se pudo iniciar sesión con Google."
 }

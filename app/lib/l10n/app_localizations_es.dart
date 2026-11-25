@@ -422,4 +422,20 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get validationInviteCode => 'Escribe el código de invitación.';
+
+  @override
+  String get continueWithGoogle => 'Continuar con Google';
+
+  @override
+  String get orDivider => 'o';
+
+  @override
+  String get googleInviteBody =>
+      'Para crear tu cuenta con Google necesitas un código de invitación.';
+
+  @override
+  String get continueLabel => 'Continuar';
+
+  @override
+  String get googleFailed => 'No se pudo iniciar sesión con Google.';
 }

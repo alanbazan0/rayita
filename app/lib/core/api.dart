@@ -106,12 +106,20 @@ class Api {
       'invite_code': inviteCode.trim(),
   });
 
-  /// Si el servidor exige un código de invitación para registrarse.
-  Future<bool> requiresInviteCode() async {
+  /// Ajustes públicos del servidor: invitación y client IDs de Google.
+  Future<AppConfig> fetchConfig() async {
     final res = await dio.get('/config');
-    final registration = (res.data as Map<String, dynamic>)['registration'];
-    return registration is Map && registration['requires_invite_code'] == true;
+    return AppConfig.fromJson(res.data as Map<String, dynamic>);
   }
+
+  /// Inicia sesión (o crea la cuenta) con un ID token de Google. El código de
+  /// invitación solo lo pide el servidor a cuentas nuevas.
+  Future<User> googleLogin(String idToken, {String? inviteCode}) =>
+      _authenticate('/google', {
+        'id_token': idToken,
+        if (inviteCode != null && inviteCode.trim().isNotEmpty)
+          'invite_code': inviteCode.trim(),
+      });
 
   /// Devuelve el usuario de la sesión guardada, o null si no hay/expiró.
   Future<User?> restoreSession() async {

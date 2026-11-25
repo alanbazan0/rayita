@@ -114,5 +114,10 @@
   "viewCards": "Cards view",
   "viewList": "List view",
   "inviteCode": "Invitation code",
-  "validationInviteCode": "Enter the invitation code."
+  "validationInviteCode": "Enter the invitation code.",
+  "continueWithGoogle": "Continue with Google",
+  "orDivider": "or",
+  "googleInviteBody": "To create your account with Google you need an invitation code.",
+  "continueLabel": "Continue",
+  "googleFailed": "Couldn't sign in with Google."
 }

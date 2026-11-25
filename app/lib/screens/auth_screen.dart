@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api.dart';
 import '../core/locale.dart';
+import '../core/models.dart';
 import '../core/providers.dart';
+import '../widgets/google_login_section.dart';
 import '../widgets/language_button.dart';
 import '../widgets/welcome_scene.dart';
 import '../widgets/ui.dart';
@@ -80,11 +82,57 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         (data['errors'] as Map).containsKey('invite_code');
   }
 
+  /// Entra con Google. Si la cuenta es nueva y el servidor exige invitación,
+  /// pide el código en un diálogo y reintenta con el mismo token.
+  Future<void> _googleLogin(String idToken) async {
+    String? code;
+    while (true) {
+      try {
+        await ref
+            .read(authProvider.notifier)
+            .loginWithGoogle(idToken, inviteCode: code);
+        return;
+      } catch (e) {
+        if (!_mentionsInviteCode(e) || !mounted) rethrow;
+        final retry = code != null ? errorMessage(e, context.l10n) : null;
+        code = await showDialog<String>(
+          context: context,
+          builder: (_) => _InviteCodeDialog(error: retry),
+        );
+        if (code == null || code.isEmpty) return; // canceló
+      }
+    }
+  }
+
+  void _googleError(Object e) {
+    if (!mounted) return;
+    final l = context.l10n;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e is DioException ? errorMessage(e, l) : l.googleFailed),
+      ),
+    );
+  }
+
+  /// "o" + botón de Google; solo si el servidor tiene Google configurado.
+  List<Widget> _googleBlock() {
+    final config = ref.watch(appConfigProvider).value ?? AppConfig.empty;
+    if (!config.googleEnabled) return const [];
+    return [
+      const SizedBox(height: 18),
+      GoogleLoginSection(
+        config: config,
+        onIdToken: _googleLogin,
+        onError: _googleError,
+      ),
+    ];
+  }
+
   void _open({required bool registering}) => setState(() {
     _registering = registering;
     _showForm = true;
     _confirm.clear();
-    if (registering) ref.invalidate(inviteRequiredProvider);
+    if (registering) ref.invalidate(appConfigProvider);
     _error = null;
   });
 
@@ -160,6 +208,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   onPressed: () => _open(registering: true),
                 ),
               ),
+              ..._googleBlock(),
               const SizedBox(height: 14),
               FadeSlideIn(
                 index: 3,
@@ -183,7 +232,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     // El código solo se pide al registrarse, y solo si el servidor lo exige.
     final inviteRequired =
         _registering &&
-        (_inviteNeeded || (ref.watch(inviteRequiredProvider).value ?? false));
+        (_inviteNeeded ||
+            (ref.watch(appConfigProvider).value?.requiresInviteCode ?? false));
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
@@ -307,6 +357,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   busy: _busy,
                   onPressed: _busy ? null : _submit,
                 ),
+                ..._googleBlock(),
                 const SizedBox(height: 14),
                 _SwitchLine(
                   question: _registering
@@ -423,6 +474,63 @@ class _PlainLanguageButton extends StatelessWidget {
     return const IconTheme(
       data: IconThemeData(color: WelcomeColors.navy),
       child: LanguageButton(),
+    );
+  }
+}
+
+/// Pide el código de invitación cuando una cuenta nueva entra con Google.
+class _InviteCodeDialog extends StatefulWidget {
+  const _InviteCodeDialog({this.error});
+
+  final String? error;
+
+  @override
+  State<_InviteCodeDialog> createState() => _InviteCodeDialogState();
+}
+
+class _InviteCodeDialogState extends State<_InviteCodeDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return AlertDialog(
+      title: Text(l.inviteCode),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l.googleInviteBody),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            autocorrect: false,
+            textCapitalization: TextCapitalization.none,
+            decoration: InputDecoration(
+              labelText: l.inviteCode,
+              errorText: widget.error,
+            ),
+            onSubmitted: (v) => Navigator.of(context).pop(v.trim()),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          child: Text(l.continueLabel),
+        ),
+      ],
     );
   }
 }

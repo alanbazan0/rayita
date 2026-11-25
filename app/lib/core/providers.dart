@@ -1,8 +1,17 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api.dart';
+import 'google_auth.dart';
 import 'locale.dart';
 import 'models.dart';
+
+/// Inicio de sesión de Google en Android/iOS (en web se usa el botón oficial).
+final googleAuthProvider = Provider<GoogleAuthService>(
+  (ref) => const GoogleAuthService(),
+);
 
 final apiProvider = Provider<Api>(
   (ref) => Api(language: () => effectiveLanguageCode(ref.read(localeProvider))),
@@ -37,6 +46,15 @@ class AuthNotifier extends AsyncNotifier<User?> {
     state = AsyncData(user);
   }
 
+  /// Entra con un ID token de Google; si la cuenta es nueva y el servidor
+  /// exige invitación, lanza un error 422 con `invite_code`.
+  Future<void> loginWithGoogle(String idToken, {String? inviteCode}) async {
+    final user = await ref
+        .read(apiProvider)
+        .googleLogin(idToken, inviteCode: inviteCode);
+    state = AsyncData(user);
+  }
+
   Future<void> verifyEmail(String code) async {
     final user = await ref.read(apiProvider).verifyEmail(code);
     state = AsyncData(user);
@@ -48,17 +66,19 @@ class AuthNotifier extends AsyncNotifier<User?> {
     } catch (_) {
       // El token local ya se borró; la sesión se cierra igual.
     }
+    // Que la próxima vez Google deje elegir la cuenta (no aplica en web).
     state = const AsyncData(null);
+    if (!kIsWeb) unawaited(ref.read(googleAuthProvider).signOut());
   }
 }
 
-/// ¿El servidor pide código de invitación al registrarse? Si no se puede
-/// consultar, se asume que no (el servidor igual lo valida y avisa).
-final inviteRequiredProvider = FutureProvider<bool>((ref) async {
+/// Ajustes públicos del servidor (invitación y Google). Si no se pueden
+/// consultar, se asume el caso más simple: el servidor igual valida y avisa.
+final appConfigProvider = FutureProvider<AppConfig>((ref) async {
   try {
-    return await ref.read(apiProvider).requiresInviteCode();
+    return await ref.read(apiProvider).fetchConfig();
   } catch (_) {
-    return false;
+    return AppConfig.empty;
   }
 });
 

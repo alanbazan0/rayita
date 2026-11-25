@@ -1,4 +1,5 @@
 import 'package:calendar_check/core/api.dart';
+import 'package:calendar_check/core/google_auth.dart';
 import 'package:calendar_check/core/models.dart';
 import 'package:calendar_check/core/providers.dart';
 import 'package:calendar_check/screens/auth_screen.dart';
@@ -11,16 +12,65 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'test_app.dart';
 
 class _FakeApi extends Api {
-  _FakeApi({this.requiresCode = false, this.configFails = false});
+  _FakeApi({
+    this.requiresCode = false,
+    this.configFails = false,
+    this.googleEnabled = false,
+    this.googleNeedsInvite = false,
+  });
 
   final bool requiresCode;
   final bool configFails;
+  final bool googleEnabled;
+
+  /// Simula una cuenta nueva con servidor que exige invitación (código PRUEBAS).
+  final bool googleNeedsInvite;
   final List<String?> inviteCodesSent = [];
+  final List<({String token, String? code})> googleCalls = [];
 
   @override
-  Future<bool> requiresInviteCode() async {
+  Future<User?> restoreSession() async => null;
+
+  @override
+  Future<AppConfig> fetchConfig() async {
     if (configFails) throw Exception('sin red');
-    return requiresCode;
+    return AppConfig(
+      requiresInviteCode: requiresCode,
+      googleWebClientId: googleEnabled
+          ? 'web.apps.googleusercontent.com'
+          : null,
+    );
+  }
+
+  @override
+  Future<User> googleLogin(String idToken, {String? inviteCode}) async {
+    googleCalls.add((token: idToken, code: inviteCode));
+    if (googleNeedsInvite && inviteCode != 'PRUEBAS') {
+      throw DioException(
+        requestOptions: RequestOptions(path: '/google'),
+        type: DioExceptionType.badResponse,
+        response: Response(
+          requestOptions: RequestOptions(path: '/google'),
+          statusCode: 422,
+          data: {
+            'message': 'x',
+            'errors': {
+              'invite_code': [
+                inviteCode == null
+                    ? 'El código de invitación es obligatorio.'
+                    : 'El código de invitación no es válido.',
+              ],
+            },
+          },
+        ),
+      );
+    }
+    return const User(
+      id: 1,
+      name: 'Ana',
+      email: 'ana@example.com',
+      emailVerified: true,
+    );
   }
 
   @override
@@ -52,17 +102,47 @@ class _FakeApi extends Api {
   }
 }
 
+class _FakeGoogle extends GoogleAuthService {
+  _FakeGoogle(this.token);
+
+  final String? token;
+  int calls = 0;
+
+  @override
+  Future<String?> signIn(AppConfig config) async {
+    calls++;
+    return token;
+  }
+
+  @override
+  Future<void> signOut() async {}
+}
+
+/// Avanza unos fotogramas: con el diálogo abierto el spinner del botón sigue
+/// animando, así que pumpAndSettle no termina.
+Future<void> _frames(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 600));
+}
+
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> pumpAuth(WidgetTester tester, {_FakeApi? api}) async {
+  Future<void> pumpAuth(
+    WidgetTester tester, {
+    _FakeApi? api,
+    _FakeGoogle? google,
+  }) async {
     // Pantalla alta de teléfono para que todo quede a la vista.
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [apiProvider.overrideWithValue(api ?? _FakeApi())],
+        overrides: [
+          apiProvider.overrideWithValue(api ?? _FakeApi()),
+          googleAuthProvider.overrideWithValue(google ?? _FakeGoogle('tok')),
+        ],
         child: testApp(home: const AuthScreen()),
       ),
     );
@@ -213,5 +293,108 @@ void main() {
         expect(find.text('Código de invitación'), findsOneWidget);
       },
     );
+  });
+
+  group('Google', () {
+    testWidgets('no se muestra si el servidor no lo tiene configurado', (
+      tester,
+    ) async {
+      await pumpAuth(tester);
+      expect(find.text('Continuar con Google'), findsNothing);
+    });
+
+    testWidgets(
+      'se muestra en la bienvenida y en el formulario si está configurado',
+      (tester) async {
+        await pumpAuth(tester, api: _FakeApi(googleEnabled: true));
+        expect(find.text('Continuar con Google'), findsOneWidget);
+
+        await tester.tap(find.text('Crear una cuenta'));
+        await tester.pumpAndSettle();
+        expect(find.text('Continuar con Google'), findsOneWidget);
+      },
+    );
+
+    testWidgets('al tocarlo envía el ID token a la API', (tester) async {
+      final api = _FakeApi(googleEnabled: true);
+      final google = _FakeGoogle('id-token-123');
+      await pumpAuth(tester, api: api, google: google);
+
+      await tester.tap(find.text('Continuar con Google'));
+      await tester.pumpAndSettle();
+
+      expect(google.calls, 1);
+      expect(api.googleCalls, [(token: 'id-token-123', code: null)]);
+    });
+
+    testWidgets('si la persona cancela no se llama a la API', (tester) async {
+      final api = _FakeApi(googleEnabled: true);
+      await pumpAuth(tester, api: api, google: _FakeGoogle(null));
+
+      await tester.tap(find.text('Continuar con Google'));
+      await tester.pumpAndSettle();
+
+      expect(api.googleCalls, isEmpty);
+    });
+
+    testWidgets(
+      'cuenta nueva con invitación: pide el código y reintenta con el mismo token',
+      (tester) async {
+        final api = _FakeApi(googleEnabled: true, googleNeedsInvite: true);
+        await pumpAuth(tester, api: api, google: _FakeGoogle('tok-1'));
+
+        await tester.tap(find.text('Continuar con Google'));
+        await _frames(tester);
+        expect(
+          find.text(
+            'Para crear tu cuenta con Google necesitas un código de invitación.',
+          ),
+          findsOneWidget,
+        );
+
+        await tester.enterText(find.byType(TextField), 'PRUEBAS');
+        await tester.tap(find.text('Continuar'));
+        await _frames(tester);
+
+        expect(api.googleCalls, [
+          (token: 'tok-1', code: null),
+          (token: 'tok-1', code: 'PRUEBAS'),
+        ]);
+      },
+    );
+
+    testWidgets('código incorrecto: vuelve a pedirlo mostrando el error', (
+      tester,
+    ) async {
+      final api = _FakeApi(googleEnabled: true, googleNeedsInvite: true);
+      await pumpAuth(tester, api: api, google: _FakeGoogle('tok-1'));
+
+      await tester.tap(find.text('Continuar con Google'));
+      await _frames(tester);
+      await tester.enterText(find.byType(TextField), 'mal');
+      await tester.tap(find.text('Continuar'));
+      await _frames(tester);
+
+      expect(
+        find.text('El código de invitación no es válido.'),
+        findsOneWidget,
+      );
+      expect(api.googleCalls.length, 2);
+    });
+
+    testWidgets('cancelar el diálogo de invitación no crea la cuenta', (
+      tester,
+    ) async {
+      final api = _FakeApi(googleEnabled: true, googleNeedsInvite: true);
+      await pumpAuth(tester, api: api, google: _FakeGoogle('tok-1'));
+
+      await tester.tap(find.text('Continuar con Google'));
+      await _frames(tester);
+      await tester.tap(find.text('Cancelar'));
+      await _frames(tester);
+
+      expect(api.googleCalls.length, 1);
+      expect(find.text('Código de invitación'), findsNothing);
+    });
   });
 }

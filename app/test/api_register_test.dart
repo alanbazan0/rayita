@@ -90,19 +90,58 @@ void main() {
     expect((adapter.last!.data as Map).containsKey('invite_code'), isFalse);
   });
 
-  test('requiresInviteCode lee /config', () async {
+  test('fetchConfig lee la invitación y los client IDs de Google', () async {
     adapter.response = {
       'registration': {'requires_invite_code': true},
+      'google': {
+        'enabled': true,
+        'web_client_id': 'web.apps.googleusercontent.com',
+        'ios_client_id': 'ios.apps.googleusercontent.com',
+      },
     };
-    expect(await api.requiresInviteCode(), isTrue);
+    final config = await api.fetchConfig();
     expect(adapter.last!.path, '/config');
+    expect(config.requiresInviteCode, isTrue);
+    expect(config.googleEnabled, isTrue);
+    expect(config.googleWebClientId, 'web.apps.googleusercontent.com');
+    expect(config.googleIosClientId, 'ios.apps.googleusercontent.com');
+  });
 
+  test('fetchConfig tolera respuestas sin Google o vacías', () async {
     adapter.response = {
       'registration': {'requires_invite_code': false},
+      'google': {
+        'enabled': false,
+        'web_client_id': null,
+        'ios_client_id': null,
+      },
     };
-    expect(await api.requiresInviteCode(), isFalse);
+    var config = await api.fetchConfig();
+    expect(config.requiresInviteCode, isFalse);
+    expect(config.googleEnabled, isFalse);
 
     adapter.response = {};
-    expect(await api.requiresInviteCode(), isFalse);
+    config = await api.fetchConfig();
+    expect(config.googleEnabled, isFalse);
+    expect(config.googleWebClientId, isNull);
   });
+
+  test(
+    'googleLogin manda id_token (y la invitación sin espacios solo si hay)',
+    () async {
+      adapter.response = {
+        'user': {'id': 1, 'name': 'Ana', 'email': 'ana@example.com'},
+        'token': 't',
+      };
+      await api.googleLogin('tok');
+      expect(adapter.last!.path, '/google');
+      expect(adapter.last!.data, {'id_token': 'tok'});
+
+      await api.googleLogin('tok', inviteCode: '  PRUEBAS ');
+      expect(adapter.last!.data, {'id_token': 'tok', 'invite_code': 'PRUEBAS'});
+
+      await api.googleLogin('tok', inviteCode: '   ');
+      expect((adapter.last!.data as Map).containsKey('invite_code'), isFalse);
+    },
+  );
 }
