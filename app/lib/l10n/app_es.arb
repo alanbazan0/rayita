@@ -1,6 +1,6 @@
 {
   "@@locale": "es",
-  "appTitle": "Calendar Check",
+  "appTitle": "Rayita",
   "signIn": "Inicia sesión",
   "createYourAccount": "Crea tu cuenta",
   "name": "Nombre",
@@ -231,5 +231,9 @@
   "welcome": "Bienvenido",
   "haveAccountQuestion": "¿Ya tienes cuenta?",
   "noAccountQuestion": "¿No tienes cuenta?",
-  "welcomeSubtitle": "Marca cada día, mira crecer tus rayitas y construye hábitos que duran."
+  "welcomeSubtitle": "Marca cada día, mira crecer tus rayitas y construye hábitos que duran.",
+  "viewCards": "Vista de tarjetas",
+  "viewList": "Vista de lista",
+  "inviteCode": "Código de invitación",
+  "validationInviteCode": "Escribe el código de invitación."
 }

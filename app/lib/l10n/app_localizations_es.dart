@@ -10,7 +10,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get appTitle => 'Calendar Check';
+  String get appTitle => 'Rayita';
 
   @override
   String get signIn => 'Inicia sesión';
@@ -410,4 +410,16 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get welcomeSubtitle =>
       'Marca cada día, mira crecer tus rayitas y construye hábitos que duran.';
+
+  @override
+  String get viewCards => 'Vista de tarjetas';
+
+  @override
+  String get viewList => 'Vista de lista';
+
+  @override
+  String get inviteCode => 'Código de invitación';
+
+  @override
+  String get validationInviteCode => 'Escribe el código de invitación.';
 }

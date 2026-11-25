@@ -58,6 +58,11 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
     }
   }
 
+  bool get _isCurrentMonth {
+    final now = DateTime.now();
+    return _month.year == now.year && _month.month == now.month;
+  }
+
   void _shift(int delta) =>
       setState(() => _month = DateTime(_month.year, _month.month + delta));
 
@@ -406,7 +411,8 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
                   FadeSlideIn(
                     index: 2,
                     child: _TallyCard(
-                      title: l.thisMonth,
+                      // En meses pasados se muestra el nombre del mes en vez de "Este mes".
+                      title: _isCurrentMonth ? l.thisMonth : title,
                       big: '${s.monthDone}',
                       detail: s.monthPartial > 0
                           ? l.partialCount(s.monthPartial)

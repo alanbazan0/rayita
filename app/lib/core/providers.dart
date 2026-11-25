@@ -22,11 +22,18 @@ class AuthNotifier extends AsyncNotifier<User?> {
     String name,
     String email,
     String password,
-    String passwordConfirmation,
-  ) async {
+    String passwordConfirmation, {
+    String? inviteCode,
+  }) async {
     final user = await ref
         .read(apiProvider)
-        .register(name, email, password, passwordConfirmation);
+        .register(
+          name,
+          email,
+          password,
+          passwordConfirmation,
+          inviteCode: inviteCode,
+        );
     state = AsyncData(user);
   }
 
@@ -44,6 +51,16 @@ class AuthNotifier extends AsyncNotifier<User?> {
     state = const AsyncData(null);
   }
 }
+
+/// ¿El servidor pide código de invitación al registrarse? Si no se puede
+/// consultar, se asume que no (el servidor igual lo valida y avisa).
+final inviteRequiredProvider = FutureProvider<bool>((ref) async {
+  try {
+    return await ref.read(apiProvider).requiresInviteCode();
+  } catch (_) {
+    return false;
+  }
+});
 
 final authProvider = AsyncNotifierProvider<AuthNotifier, User?>(
   AuthNotifier.new,

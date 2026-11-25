@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In es, this message translates to:
-  /// **'Calendar Check'**
+  /// **'Rayita'**
   String get appTitle;
 
   /// No description provided for @signIn.
@@ -721,6 +721,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Marca cada día, mira crecer tus rayitas y construye hábitos que duran.'**
   String get welcomeSubtitle;
+
+  /// No description provided for @viewCards.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista de tarjetas'**
+  String get viewCards;
+
+  /// No description provided for @viewList.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista de lista'**
+  String get viewList;
+
+  /// No description provided for @inviteCode.
+  ///
+  /// In es, this message translates to:
+  /// **'Código de invitación'**
+  String get inviteCode;
+
+  /// No description provided for @validationInviteCode.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe el código de invitación.'**
+  String get validationInviteCode;
 }
 
 class _AppLocalizationsDelegate

@@ -10,6 +10,7 @@ import '../core/locale.dart';
 import '../core/models.dart';
 import '../core/providers.dart';
 import '../core/theme.dart';
+import '../core/view_mode.dart';
 import '../widgets/tally_logo.dart';
 import '../widgets/habit_dialog.dart';
 import '../widgets/language_button.dart';
@@ -23,6 +24,7 @@ class HabitsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final habits = ref.watch(habitsProvider);
+    final view = ref.watch(viewModeProvider);
     final l = context.l10n;
     final locale = Localizations.localeOf(context).toString();
     final date = toBeginningOfSentenceCase(
@@ -105,32 +107,44 @@ class HabitsScreen extends ConsumerWidget {
                             title: l.todayLabel,
                             action: l.newHabit,
                             onAction: () => _addHabit(context, ref),
+                            view: view,
+                            onView: ref.read(viewModeProvider.notifier).set,
                           ),
                           const SizedBox(height: 28),
-                          LayoutBuilder(
-                            builder: (context, c) {
-                              const gap = 14.0;
-                              final cols = (c.maxWidth / 190).floor().clamp(
-                                2,
-                                5,
-                              );
-                              final w = (c.maxWidth - gap * (cols - 1)) / cols;
-                              return Wrap(
-                                spacing: gap,
-                                runSpacing: gap + 16,
-                                children: [
-                                  for (var i = 0; i < list.length; i++)
-                                    FadeSlideIn(
-                                      index: i + 1,
-                                      child: SizedBox(
-                                        width: w,
-                                        child: _HabitCard(habit: list[i]),
+                          if (view == HabitsView.list)
+                            for (var i = 0; i < list.length; i++) ...[
+                              FadeSlideIn(
+                                index: i + 1,
+                                child: _HabitRow(habit: list[i]),
+                              ),
+                              const SizedBox(height: 12),
+                            ]
+                          else
+                            LayoutBuilder(
+                              builder: (context, c) {
+                                const gap = 14.0;
+                                final cols = (c.maxWidth / 190).floor().clamp(
+                                  2,
+                                  5,
+                                );
+                                final w =
+                                    (c.maxWidth - gap * (cols - 1)) / cols;
+                                return Wrap(
+                                  spacing: gap,
+                                  runSpacing: gap + 16,
+                                  children: [
+                                    for (var i = 0; i < list.length; i++)
+                                      FadeSlideIn(
+                                        index: i + 1,
+                                        child: SizedBox(
+                                          width: w,
+                                          child: _HabitCard(habit: list[i]),
+                                        ),
                                       ),
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
+                                  ],
+                                );
+                              },
+                            ),
                         ],
                       ),
               ),
@@ -244,33 +258,109 @@ class _SectionTitle extends StatelessWidget {
     required this.title,
     required this.action,
     required this.onAction,
+    required this.view,
+    required this.onView,
   });
 
   final String title;
   final String action;
   final VoidCallback onAction;
+  final HabitsView view;
+  final ValueChanged<HabitsView> onView;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.w800),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // En pantallas angostas el botón de agregar queda solo con ícono.
+        final compact = constraints.maxWidth < 400;
+        return Row(
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(width: 12),
+            _ViewToggle(view: view, onChanged: onView),
+            const Spacer(),
+            if (compact)
+              IconButton(
+                tooltip: action,
+                onPressed: onAction,
+                color: AppColors.primary,
+                icon: const Icon(Icons.add_circle_outline),
+              )
+            else
+              TextButton.icon(
+                onPressed: onAction,
+                iconAlignment: IconAlignment.end,
+                icon: const Icon(Icons.arrow_forward, size: 18),
+                label: Text(
+                  action,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Dos botones (tarjetas / lista); el activo va relleno.
+class _ViewToggle extends StatelessWidget {
+  const _ViewToggle({required this.view, required this.onChanged});
+
+  final HabitsView view;
+  final ValueChanged<HabitsView> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    Widget button(HabitsView v, IconData icon, String tooltip) {
+      final selected = v == view;
+      return Semantics(
+        button: true,
+        selected: selected,
+        label: tooltip,
+        child: Tooltip(
+          message: tooltip,
+          child: GestureDetector(
+            onTap: () => onChanged(v),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 36,
+              height: 32,
+              decoration: BoxDecoration(
+                color: selected ? AppColors.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                icon,
+                size: 18,
+                color: selected ? Colors.white : AppColors.muted,
+              ),
+            ),
           ),
         ),
-        TextButton.icon(
-          onPressed: onAction,
-          iconAlignment: IconAlignment.end,
-          icon: const Icon(Icons.arrow_forward, size: 18),
-          label: Text(
-            action,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-        ),
-      ],
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: softShadow(0.06),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          button(HabitsView.cards, Icons.grid_view_rounded, l.viewCards),
+          button(HabitsView.list, Icons.view_list_rounded, l.viewList),
+        ],
+      ),
     );
   }
 }
@@ -497,35 +587,39 @@ class _RingPainter extends CustomPainter {
   bool shouldRepaint(_RingPainter old) => old.value != value;
 }
 
+/// Marca o desmarca hoy como cumplido; avisa si la API falla.
+Future<void> toggleHabitToday(
+  BuildContext context,
+  WidgetRef ref,
+  Habit habit,
+  bool isDone,
+) async {
+  final api = ref.read(apiProvider);
+  final today = formatDay(DateTime.now());
+  try {
+    if (isDone) {
+      await api.clearLog(habit.id, today);
+    } else {
+      await api.setLog(habit.id, today, LogStatus.done);
+    }
+    ref.invalidate(logsProvider);
+    ref.invalidate(statsProvider);
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(errorMessage(e, context.l10n))));
+    }
+  }
+}
+
 /// Tarjeta de hábito con degradado de su color y una esquina grande redondeada.
 class _HabitCard extends ConsumerWidget {
   const _HabitCard({required this.habit});
 
   final Habit habit;
 
-  Future<void> _toggleToday(
-    BuildContext context,
-    WidgetRef ref,
-    bool isDone,
-  ) async {
-    final api = ref.read(apiProvider);
-    final today = formatDay(DateTime.now());
-    try {
-      if (isDone) {
-        await api.clearLog(habit.id, today);
-      } else {
-        await api.setLog(habit.id, today, LogStatus.done);
-      }
-      ref.invalidate(logsProvider);
-      ref.invalidate(statsProvider);
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(errorMessage(e, context.l10n))));
-      }
-    }
-  }
+  Future<void> _toggleToday(BuildContext context, WidgetRef ref, bool isDone) =>
+      toggleHabitToday(context, ref, habit, isDone);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -819,6 +913,147 @@ class _CardProgress extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Fila de la vista de lista: avatar, nombre, racha, marcas y círculo de hoy.
+class _HabitRow extends ConsumerWidget {
+  const _HabitRow({required this.habit});
+
+  final Habit habit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = DateTime.now();
+    final key = (habitId: habit.id, month: formatMonth(now));
+    final stats = ref.watch(statsProvider(key)).value;
+    final logs = ref.watch(logsProvider(key));
+    final color = habit.displayColor;
+    final l = context.l10n;
+    final today = formatDay(now);
+    final activeToday = habit.isActiveOn(now);
+    final isDone =
+        logs.value?.any((x) => x.date == today && x.status == LogStatus.done) ??
+        false;
+    final goal = stats?.goal;
+    final tooltip = !activeToday
+        ? l.notToday
+        : isDone
+        ? l.unmarkToday
+        : l.markToday;
+
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => HabitDetailScreen(habit: habit),
+        ),
+      ),
+      child: Row(
+        children: [
+          HabitAvatar(
+            icon: habit.icon,
+            color: color,
+            label: habit.name,
+            radius: 24,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  habit.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 2),
+                if (stats != null)
+                  Text(
+                    [
+                      '🔥 ${l.streakDays(stats.currentStreak)}',
+                      if (goal != null && !goal.achieved && !goal.failed)
+                        l.goalProgress(goal.progress, goal.target),
+                      if (goal != null && goal.achieved) l.goalAchieved,
+                    ].join('  ·  '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.muted,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                if (stats != null) ...[
+                  const SizedBox(height: 8),
+                  TallyMarks(tally: stats.monthTally, color: color, height: 18),
+                  if (goal != null) ...[
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: LinearProgressIndicator(
+                        value: goal.fraction,
+                        minHeight: 6,
+                        backgroundColor: color.withValues(alpha: 0.14),
+                        color: goal.failed ? AppColors.muted : color,
+                      ),
+                    ),
+                  ],
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Semantics(
+            button: true,
+            label: tooltip,
+            child: Tooltip(
+              message: tooltip,
+              child: GestureDetector(
+                onTap: !activeToday
+                    ? () => ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(l.inactiveDayHint)))
+                    : () => toggleHabitToday(context, ref, habit, isDone),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isDone ? color : Colors.transparent,
+                    border: Border.all(
+                      color: activeToday ? color : color.withValues(alpha: 0.3),
+                      width: 2.5,
+                    ),
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: isDone
+                        ? const Icon(
+                            Icons.check,
+                            key: ValueKey('on'),
+                            color: Colors.white,
+                            size: 26,
+                          )
+                        : !activeToday
+                        ? Icon(
+                            Icons.remove,
+                            key: const ValueKey('rest'),
+                            color: color.withValues(alpha: 0.4),
+                          )
+                        : const SizedBox.shrink(key: ValueKey('off')),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

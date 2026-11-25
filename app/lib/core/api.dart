@@ -54,7 +54,7 @@ class TokenStorage {
   Future<void> clear() => _storage.delete(key: _key);
 }
 
-/// Cliente de la API de Calendar Check.
+/// Cliente de la API de Rayita.
 class Api {
   Api({Dio? dio, TokenStorage? tokens, String Function()? language})
     : tokens = tokens ?? TokenStorage(),
@@ -95,13 +95,23 @@ class Api {
     String name,
     String email,
     String password,
-    String passwordConfirmation,
-  ) => _authenticate('/register', {
+    String passwordConfirmation, {
+    String? inviteCode,
+  }) => _authenticate('/register', {
     'name': name,
     'email': email,
     'password': password,
     'password_confirmation': passwordConfirmation,
+    if (inviteCode != null && inviteCode.trim().isNotEmpty)
+      'invite_code': inviteCode.trim(),
   });
+
+  /// Si el servidor exige un código de invitación para registrarse.
+  Future<bool> requiresInviteCode() async {
+    final res = await dio.get('/config');
+    final registration = (res.data as Map<String, dynamic>)['registration'];
+    return registration is Map && registration['requires_invite_code'] == true;
+  }
 
   /// Devuelve el usuario de la sesión guardada, o null si no hay/expiró.
   Future<User?> restoreSession() async {

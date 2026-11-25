@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api.dart';
@@ -21,6 +22,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+  final _invite = TextEditingController();
+  bool _inviteNeeded =
+      false; // el servidor lo pidió aunque no se pudo consultar
   bool _registering = false;
   bool _showForm = false; // false = pantalla de bienvenida
   bool _busy = false;
@@ -32,6 +36,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
+    _invite.dispose();
     super.dispose();
   }
 
@@ -49,21 +54,37 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           _email.text.trim(),
           _password.text,
           _confirm.text,
+          inviteCode: _invite.text,
         );
       } else {
         await auth.login(_email.text.trim(), _password.text);
       }
     } catch (e) {
-      if (mounted) setState(() => _error = errorMessage(e, context.l10n));
+      if (mounted) {
+        setState(() {
+          _error = errorMessage(e, context.l10n);
+          // Si el servidor rechazó el código, se muestra el campo.
+          if (_mentionsInviteCode(e)) _inviteNeeded = true;
+        });
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  bool _mentionsInviteCode(Object e) {
+    if (e is! DioException) return false;
+    final data = e.response?.data;
+    return data is Map &&
+        data['errors'] is Map &&
+        (data['errors'] as Map).containsKey('invite_code');
   }
 
   void _open({required bool registering}) => setState(() {
     _registering = registering;
     _showForm = true;
     _confirm.clear();
+    if (registering) ref.invalidate(inviteRequiredProvider);
     _error = null;
   });
 
@@ -159,6 +180,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Widget _buildForm(BuildContext context) {
     final theme = Theme.of(context);
     final l = context.l10n;
+    // El código solo se pide al registrarse, y solo si el servidor lo exige.
+    final inviteRequired =
+        _registering &&
+        (_inviteNeeded || (ref.watch(inviteRequiredProvider).value ?? false));
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
@@ -250,8 +275,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ),
                     validator: (v) =>
                         v != _password.text ? l.validationPasswordMatch : null,
-                    onFieldSubmitted: (_) => _submit(),
+                    onFieldSubmitted: (_) => inviteRequired ? null : _submit(),
                   ),
+                  if (inviteRequired) ...[
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _invite,
+                      autocorrect: false,
+                      textCapitalization: TextCapitalization.none,
+                      decoration: InputDecoration(
+                        labelText: l.inviteCode,
+                        prefixIcon: const Icon(Icons.key_outlined),
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? l.validationInviteCode
+                          : null,
+                      onFieldSubmitted: (_) => _submit(),
+                    ),
+                  ],
                 ],
                 if (_error != null) ...[
                   const SizedBox(height: 12),
