@@ -15,9 +15,11 @@ on:
           - optimize
           - logs
           - set-invite-code
+          - set-google-client-id
+          - set-google-ios-client-id
           - mail-test
       value:
-        description: 'set-invite-code: nuevo código (vacío = registro abierto). mail-test: correo de destino'
+        description: 'set-invite-code: nuevo código (vacío = registro abierto). set-google-client-id / set-google-ios-client-id: ID de cliente de Google (vacío = desactivar). mail-test: correo de destino'
         required: false
         type: string
 
@@ -34,9 +36,15 @@ jobs:
           ACTION: ${{ inputs.action }}
           VALUE: ${{ inputs.value }}
         run: |
-          if [ "$ACTION" = "set-invite-code" ]; then
+          case "$ACTION" in
+            set-invite-code)       NAME=INVITE_CODE ;;
+            set-google-client-id)  NAME=GOOGLE_CLIENT_ID ;;
+            set-google-ios-client-id) NAME=GOOGLE_IOS_CLIENT_ID ;;
+            *) NAME= ;;
+          esac
+          if [ -n "$NAME" ]; then
             curl -fsS -X POST -H "X-Deploy-Token: $DEPLOY_TOKEN" \
-              --data-urlencode "name=INVITE_CODE" --data-urlencode "value=$VALUE" \
+              --data-urlencode "name=$NAME" --data-urlencode "value=$VALUE" \
               "$WEB_URL/deploy.php?action=set-env"
           elif [ "$ACTION" = "mail-test" ]; then
             curl -fsS -G -H "X-Deploy-Token: $DEPLOY_TOKEN" \

@@ -21,7 +21,7 @@
  *   action=migrate-status
  *   action=logs        últimas N líneas de storage/logs (?lines=200)
  *   action=diag        pide GET /api/config al kernel y muestra el resultado
- *   action=set-env     POST name=INVITE_CODE&value=... (solo variables permitidas)
+ *   action=set-env     POST name=INVITE_CODE|GOOGLE_CLIENT_ID|GOOGLE_IOS_CLIENT_ID&value=...
  *   action=mail-test   ?to=correo@dominio.com envía un correo de prueba con el mailer de producción
  */
 
@@ -46,7 +46,7 @@ $action = (string) ($_GET['action'] ?? '');
 $isPost = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
 
 /** Variables de .env que set-env puede cambiar (nunca claves ni credenciales). */
-const ALLOWED_ENV = ['INVITE_CODE'];
+const ALLOWED_ENV = ['INVITE_CODE', 'GOOGLE_CLIENT_ID', 'GOOGLE_IOS_CLIENT_ID'];
 
 function fail(int $code, string $message): never
 {
@@ -182,8 +182,8 @@ try {
             if (!in_array($name, ALLOWED_ENV, true)) {
                 fail(422, 'variable no permitida: ' . $name);
             }
-            if (!preg_match('/^[A-Za-z0-9._\-]{0,64}$/', $value)) {
-                fail(422, 'valor inválido (solo letras, números, . _ -; máx. 64)');
+            if (!preg_match('/^[A-Za-z0-9._\-]{0,128}$/', $value)) {
+                fail(422, 'valor inválido (solo letras, números, . _ -; máx. 128)');
             }
             $envPath = $apiDir . '/.env';
             if (!is_file($envPath)) {

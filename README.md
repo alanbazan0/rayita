@@ -40,6 +40,7 @@ web de Flutter es para pruebas: se publica, pero sin difundir el enlace a los us
   - barra de avance, "faltan N días" y estado *lograda / no lograda*.
 - **Días activos** por hábito (por ejemplo solo de lunes a viernes). Un día inactivo no se puede
   marcar, no rompe la racha y no cuenta para la meta.
+- **Inicio de sesión con Google** (web, Android e iOS) además del correo; ver [docs/GOOGLE_LOGIN.md](docs/GOOGLE_LOGIN.md).
 - **Cuenta de usuario** con registro, confirmación de contraseña y **verificación de correo con
   código de 6 dígitos** (vence en 15 minutos, 5 intentos, reenvío cada 60 s).
 - **Idiomas**: español e inglés, tanto en la app como en los mensajes de la API.
@@ -112,8 +113,8 @@ cambiarlo: `--dart-define=API_URL=https://tu-dominio/api`.
 ## Pruebas
 
 ```bash
-cd backend && php artisan test     # 126 pruebas (unitarias y de funcionalidad)
-cd app && flutter analyze && flutter test   # 67 pruebas
+cd backend && php artisan test     # 153 pruebas (unitarias y de funcionalidad)
+cd app && flutter analyze && flutter test   # 76 pruebas
 ```
 
 ## API en resumen
@@ -123,7 +124,8 @@ y un correo verificado.
 
 | Método | Ruta | Para qué |
 | --- | --- | --- |
-| GET | `/config` | Ajustes públicos (si el registro pide código de invitación) |
+| GET | `/config` | Ajustes públicos (si el registro pide código de invitación y los client IDs de Google) |
+| POST | `/google` | Entrar (o crear la cuenta) con un ID token de Google |
 | POST | `/register`, `/login` | Crear cuenta (con `invite_code` si se exige) e iniciar sesión (devuelve el token) |
 | GET / POST | `/me`, `/logout` | Usuario actual y cerrar sesión |
 | POST | `/email/verify`, `/email/resend` | Verificar el correo con el código / reenviarlo |
@@ -145,4 +147,4 @@ El idioma de los mensajes se toma del encabezado `Accept-Language` (`es` por def
 - **Correo en producción:** los códigos salen por el `sendmail` del servidor desde `rayita@alanbazan.com.mx`; falta comprobar que lleguen a la bandeja (SPF/DKIM) y, si hace falta, pasar a SMTP con los secretos `MAIL_*`.
 - **Android e iOS:** las plataformas y los íconos están configurados, pero la interfaz solo se ha
   probado hasta ahora en el modo web de desarrollo; falta probarla en emuladores o dispositivos.
-- Más adelante: sustituir correo y contraseña por inicio de sesión con Google.
+- Más adelante, cuando la app esté probada: quitar el correo y la contraseña y dejar solo Google (el código ya lo permite).

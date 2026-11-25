@@ -90,6 +90,8 @@ deploy_api() {
     printf "MAIL_FROM_ADDRESS='%s'\n" "$MAIL_FROM_ADDRESS"
     echo 'MAIL_FROM_NAME="Rayita"'
     printf "INVITE_CODE='%s'\n" "$INVITE_CODE"
+    printf "GOOGLE_CLIENT_ID='%s'\n" "$GOOGLE_CLIENT_ID"
+    printf "GOOGLE_IOS_CLIENT_ID='%s'\n" "$GOOGLE_IOS_CLIENT_ID"
   } > "$ENV_FILE"
 
   # Las cachés de config/rutas/vistas se generan EN el servidor (paso "optimize"):
