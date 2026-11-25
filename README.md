@@ -110,6 +110,25 @@ cambiarlo: `--dart-define=API_URL=https://tu-dominio/api`.
 **Idiomas.** Los textos están en `app/lib/l10n/app_es.arb` y `app_en.arb`; tras editarlos corre
 `flutter gen-l10n`. Los mensajes de la API están en `backend/lang/es.json` y `en.json`.
 
+## Ofuscación (Android)
+
+El APK/AAB de release se compila con el código Dart **ofuscado** y con **R8** (reduce y renombra el
+código nativo y los recursos). Se usa el script:
+
+```bash
+app/tool/build_release.sh appbundle    # el que pide Google Play (por defecto)
+app/tool/build_release.sh apk          # para instalar directo en un teléfono
+```
+
+- Los símbolos quedan en `app/build/symbols/<versión>/` y el mapa de R8 en
+  `app/build/app/outputs/mapping/release/mapping.txt`. **Guárdalos por cada versión que publiques**:
+  sin ellos no se pueden leer los fallos reportados. En Play Console se suben junto al `.aab`.
+- Ofuscar dificulta leer el código, pero **no es seguridad**: las direcciones de la API y los textos siguen
+  visibles. Por eso la app no lleva ningún secreto (el ID de cliente de Google es público).
+- La web de pruebas ya sale minificada por Flutter; `--obfuscate` no aplica a web.
+- Con R8 activo hay que probar el APK de release en un dispositivo antes de publicar (login, marcar un
+  día, cerrar sesión), porque R8 puede romper plugins que usan reflexión.
+
 ## Pruebas
 
 ```bash
