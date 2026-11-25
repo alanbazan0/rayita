@@ -21,7 +21,7 @@ TOKEN_HEADER="X-Deploy-Token: $MIGRATE_TOKEN"
 : "${APP_URL:?falta APP_URL}"
 : "${MIGRATE_TOKEN:?falta MIGRATE_TOKEN}"
 FTP_PORT="${FTP_PORT:-21}"
-MAIL_FROM_ADDRESS="${MAIL_FROM_ADDRESS:-rayita@alanbazan.com.mx}"
+MAIL_FROM_ADDRESS="${MAIL_FROM_ADDRESS:-support@alanbazan.com.mx}"
 APP_DIR="${APP_DIR:-rayita_app/}"
 DEPLOY_DIR="${DEPLOY_DIR:-rayita_deploy/}"
 

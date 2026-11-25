@@ -144,12 +144,12 @@ El idioma de los mensajes se toma del encabezado `Accept-Language` (`es` por def
   Actions (o con `./deploy.sh`) y un `deploy.php` protegido por token extrae, migra y consulta logs
   sin SSH. Guía en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). La web no se indexa en buscadores, y el
   registro pide un código de invitación. La app móvil se distribuirá por Google Play (iOS y la App Store quedan para más adelante).
-- **Correo en producción:** los códigos salen por el `sendmail` del servidor desde `rayita@alanbazan.com.mx`; falta comprobar que lleguen a la bandeja (SPF/DKIM) y, si hace falta, pasar a SMTP con los secretos `MAIL_*`.
+- **Correo en producción:** los códigos salen por el `sendmail` del servidor desde `support@alanbazan.com.mx`; falta comprobar que lleguen a la bandeja (SPF/DKIM) y, si hace falta, pasar a SMTP con los secretos `MAIL_*`.
 - **Android:** la plataforma y los íconos están configurados, pero la interfaz solo se ha probado
   hasta ahora en el modo web de desarrollo; falta probarla en un emulador o dispositivo.
 - **iOS:** descartado por ahora. El proyecto nativo sigue ahí por si se retoma.
 - **Políticas legales:** [privacidad](https://rayita.alanbazan.com.mx/privacidad) y
   [términos](https://rayita.alanbazan.com.mx/terminos) (también en inglés: `/privacy` y `/terms`),
-  que Google Cloud y Google Play piden como enlaces públicos. Falta crear el buzón `rayita@alanbazan.com.mx`
-  que aparece como contacto y habilitar la eliminación de la cuenta dentro de la app.
+  que Google Cloud y Google Play piden como enlaces públicos. El contacto es `support@alanbazan.com.mx`. Falta
+  habilitar la eliminación de la cuenta dentro de la app (hoy es por correo).
 - Más adelante, cuando la app esté probada: quitar el correo y la contraseña y dejar solo Google (el código ya lo permite).
