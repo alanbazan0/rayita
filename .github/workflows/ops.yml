@@ -1,0 +1,40 @@
+name: Operación del servidor (sin SSH)
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Acción del extractor de despliegue'
+        required: true
+        default: 'diag'
+        type: choice
+        options:
+          - diag
+          - migrate-status
+          - migrate
+          - optimize
+          - logs
+          - set-invite-code
+      value:
+        description: 'set-invite-code: nuevo código (vacío = registro abierto)'
+        required: false
+        type: string
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ejecutar la acción
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          WEB_URL: ${{ secrets.WEB_URL }}
+          ACTION: ${{ inputs.action }}
+          VALUE: ${{ inputs.value }}
+        run: |
+          if [ "$ACTION" = "set-invite-code" ]; then
+            curl -fsS -X POST -H "X-Deploy-Token: $DEPLOY_TOKEN" \
+              --data-urlencode "name=INVITE_CODE" --data-urlencode "value=$VALUE" \
+              "$WEB_URL/deploy.php?action=set-env"
+          else
+            curl -fsS -H "X-Deploy-Token: $DEPLOY_TOKEN" "$WEB_URL/deploy.php?action=$ACTION"
+          fi

@@ -1,0 +1,59 @@
+name: Deploy Web (HostGator)
+
+# Publica la web de pruebas de Flutter (no se difunde el enlace) junto con deploy.php.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'deploy/**'
+      - '.github/workflows/deploy-web.yml'
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.47.6'
+          cache: true
+
+      - name: Análisis y pruebas
+        working-directory: app
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+
+      # --pwa-strategy=none: sin service worker, para que Chrome no se quede con versiones viejas.
+      - name: Compilar web
+        working-directory: app
+        run: >
+          flutter build web --release --pwa-strategy=none --base-href /
+          --dart-define=API_URL=${{ secrets.API_BASE_URL }}
+
+      - name: Agregar el extractor de despliegue
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: sed "s|__DEPLOY_TOKEN__|$DEPLOY_TOKEN|" deploy/extract.php > app/build/web/deploy.php
+
+      - name: Subir la web a rayita_app/
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftp
+          local-dir: ./app/build/web/
+          server-dir: ${{ secrets.APP_DIR }}
