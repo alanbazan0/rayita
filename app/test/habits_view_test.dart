@@ -2,6 +2,7 @@ import 'package:calendar_check/core/api.dart';
 import 'package:calendar_check/core/models.dart';
 import 'package:calendar_check/core/providers.dart';
 import 'package:calendar_check/core/view_mode.dart';
+import 'package:calendar_check/screens/account_screen.dart';
 import 'package:calendar_check/screens/habits_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -155,94 +156,18 @@ void main() {
     expect(c.read(viewModeProvider), HabitsView.cards);
   });
 
-  group('cuenta', () {
-    Future<(_FakeApi, ProviderContainer)> pumpWithAuth(
-      WidgetTester tester,
-    ) async {
-      final api = await pumpHome(tester);
-      final container = ProviderScope.containerOf(
-        tester.element(find.byType(HabitsScreen)),
-      );
-      await container.read(authProvider.future);
-      return (api, container);
-    }
+  testWidgets('el ícono de Cuenta abre la pantalla de cuenta', (tester) async {
+    final api = await pumpHome(tester);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HabitsScreen)),
+    );
+    await container.read(authProvider.future);
 
-    Future<void> openMenu(WidgetTester tester) async {
-      await tester.tap(find.byTooltip('Cuenta'));
-      await tester.pumpAndSettle();
-    }
+    await tester.tap(find.byTooltip('Cuenta'));
+    await tester.pumpAndSettle();
 
-    testWidgets('el menú ofrece cerrar sesión y eliminar la cuenta', (
-      tester,
-    ) async {
-      await pumpWithAuth(tester);
-      await openMenu(tester);
-      expect(find.text('Cerrar sesión'), findsOneWidget);
-      expect(find.text('Eliminar cuenta'), findsOneWidget);
-    });
-
-    testWidgets('cerrar sesión desde el menú sigue funcionando', (
-      tester,
-    ) async {
-      final (api, container) = await pumpWithAuth(tester);
-      await openMenu(tester);
-      await tester.tap(find.text('Cerrar sesión'));
-      await tester.pumpAndSettle();
-
-      expect(api.logouts, 1);
-      expect(container.read(authProvider).value, isNull);
-    });
-
-    testWidgets('eliminar exige escribir el correo de la cuenta', (
-      tester,
-    ) async {
-      final (api, _) = await pumpWithAuth(tester);
-      await openMenu(tester);
-      await tester.tap(find.text('Eliminar cuenta'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('¿Eliminar tu cuenta?'), findsOneWidget);
-      FilledButton button() => tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Eliminar para siempre'),
-      );
-      expect(button().onPressed, isNull);
-
-      await tester.enterText(find.byType(TextField), 'otra@example.com');
-      await tester.pump();
-      expect(button().onPressed, isNull);
-
-      await tester.enterText(find.byType(TextField), '  ANA@example.com ');
-      await tester.pump();
-      expect(button().onPressed, isNotNull);
-      expect(api.deletedEmails, isEmpty);
-    });
-
-    testWidgets('confirmar elimina la cuenta y deja la app sin sesión', (
-      tester,
-    ) async {
-      final (api, container) = await pumpWithAuth(tester);
-      await openMenu(tester);
-      await tester.tap(find.text('Eliminar cuenta'));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), 'ana@example.com');
-      await tester.pump();
-      await tester.tap(find.text('Eliminar para siempre'));
-      await tester.pumpAndSettle();
-
-      expect(api.deletedEmails, ['ana@example.com']);
-      expect(container.read(authProvider).value, isNull);
-    });
-
-    testWidgets('cancelar no elimina nada', (tester) async {
-      final (api, container) = await pumpWithAuth(tester);
-      await openMenu(tester);
-      await tester.tap(find.text('Eliminar cuenta'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancelar'));
-      await tester.pumpAndSettle();
-
-      expect(api.deletedEmails, isEmpty);
-      expect(container.read(authProvider).value, isNotNull);
-    });
+    expect(find.byType(AccountScreen), findsOneWidget);
+    expect(find.text('Ana'), findsWidgets);
+    expect(api.deletedEmails, isEmpty);
   });
 }

@@ -823,6 +823,66 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Tu cuenta fue eliminada.'**
   String get accountDeleted;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In es, this message translates to:
+  /// **'Zona de peligro'**
+  String get dangerZone;
+
+  /// No description provided for @deleteAccountHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Elimina tu cuenta y todos tus datos para siempre.'**
+  String get deleteAccountHint;
+
+  /// No description provided for @memberSince.
+  ///
+  /// In es, this message translates to:
+  /// **'Miembro desde {date}'**
+  String memberSince(String date);
+
+  /// No description provided for @habitsCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{Sin hábitos} =1{1 hábito} other{{count} hábitos}}'**
+  String habitsCount(int count);
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In es, this message translates to:
+  /// **'Política de privacidad'**
+  String get privacyPolicy;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In es, this message translates to:
+  /// **'Términos y condiciones'**
+  String get termsOfService;
+
+  /// No description provided for @contactSupport.
+  ///
+  /// In es, this message translates to:
+  /// **'Contacto y ayuda'**
+  String get contactSupport;
+
+  /// No description provided for @couldNotOpenLink.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir el enlace.'**
+  String get couldNotOpenLink;
+
+  /// No description provided for @verifiedEmail.
+  ///
+  /// In es, this message translates to:
+  /// **'Correo verificado'**
+  String get verifiedEmail;
+
+  /// No description provided for @legalSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Información'**
+  String get legalSection;
 }
 
 class _AppLocalizationsDelegate

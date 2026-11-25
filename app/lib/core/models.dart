@@ -6,6 +6,7 @@ class User {
     required this.name,
     required this.email,
     this.emailVerified = false,
+    this.createdAt,
   });
 
   final int id;
@@ -13,11 +14,15 @@ class User {
   final String email;
   final bool emailVerified;
 
+  /// Cuándo se creó la cuenta (hora local); null si el servidor no lo envía.
+  final DateTime? createdAt;
+
   factory User.fromJson(Map<String, dynamic> j) => User(
     id: j['id'] as int,
     name: j['name'] as String,
     email: j['email'] as String,
     emailVerified: j['email_verified_at'] != null,
+    createdAt: DateTime.tryParse(j['created_at'] as String? ?? '')?.toLocal(),
   );
 }
 

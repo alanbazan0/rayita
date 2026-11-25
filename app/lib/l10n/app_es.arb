@@ -255,5 +255,29 @@
         "type": "String"
       }
     }
+  },
+  "dangerZone": "Zona de peligro",
+  "deleteAccountHint": "Elimina tu cuenta y todos tus datos para siempre.",
+  "memberSince": "Miembro desde {date}",
+  "habitsCount": "{count, plural, =0{Sin hábitos} =1{1 hábito} other{{count} hábitos}}",
+  "privacyPolicy": "Política de privacidad",
+  "termsOfService": "Términos y condiciones",
+  "contactSupport": "Contacto y ayuda",
+  "couldNotOpenLink": "No se pudo abrir el enlace.",
+  "verifiedEmail": "Correo verificado",
+  "legalSection": "Información",
+  "@memberSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@habitsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

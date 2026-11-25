@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
 import 'google_auth.dart';
@@ -11,6 +12,12 @@ import 'models.dart';
 /// Inicio de sesión de Google en Android/iOS (en web se usa el botón oficial).
 final googleAuthProvider = Provider<GoogleAuthService>(
   (ref) => const GoogleAuthService(),
+);
+
+/// Abre un enlace fuera de la app (navegador o correo). Se sustituye en los tests.
+final linkOpenerProvider = Provider<Future<bool> Function(Uri)>(
+  (ref) =>
+      (uri) => launchUrl(uri, mode: LaunchMode.externalApplication),
 );
 
 final apiProvider = Provider<Api>(

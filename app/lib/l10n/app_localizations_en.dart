@@ -464,4 +464,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeleted => 'Your account has been deleted.';
+
+  @override
+  String get dangerZone => 'Danger zone';
+
+  @override
+  String get deleteAccountHint =>
+      'Permanently delete your account and all your data.';
+
+  @override
+  String memberSince(String date) {
+    return 'Member since $date';
+  }
+
+  @override
+  String habitsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count habits',
+      one: '1 habit',
+      zero: 'No habits',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get privacyPolicy => 'Privacy policy';
+
+  @override
+  String get termsOfService => 'Terms and conditions';
+
+  @override
+  String get contactSupport => 'Contact and help';
+
+  @override
+  String get couldNotOpenLink => 'Couldn\'t open the link.';
+
+  @override
+  String get verifiedEmail => 'Email verified';
+
+  @override
+  String get legalSection => 'Information';
 }

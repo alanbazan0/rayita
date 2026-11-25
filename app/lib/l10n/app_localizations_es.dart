@@ -466,4 +466,46 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get accountDeleted => 'Tu cuenta fue eliminada.';
+
+  @override
+  String get dangerZone => 'Zona de peligro';
+
+  @override
+  String get deleteAccountHint =>
+      'Elimina tu cuenta y todos tus datos para siempre.';
+
+  @override
+  String memberSince(String date) {
+    return 'Miembro desde $date';
+  }
+
+  @override
+  String habitsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hábitos',
+      one: '1 hábito',
+      zero: 'Sin hábitos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get privacyPolicy => 'Política de privacidad';
+
+  @override
+  String get termsOfService => 'Términos y condiciones';
+
+  @override
+  String get contactSupport => 'Contacto y ayuda';
+
+  @override
+  String get couldNotOpenLink => 'No se pudo abrir el enlace.';
+
+  @override
+  String get verifiedEmail => 'Correo verificado';
+
+  @override
+  String get legalSection => 'Información';
 }

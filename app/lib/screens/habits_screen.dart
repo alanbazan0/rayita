@@ -16,6 +16,7 @@ import '../widgets/habit_dialog.dart';
 import '../widgets/language_button.dart';
 import '../widgets/tally_marks.dart';
 import '../widgets/ui.dart';
+import 'account_screen.dart';
 import 'habit_detail_screen.dart';
 
 class HabitsScreen extends ConsumerStatefulWidget {
@@ -96,40 +97,12 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
           children: [
             const LanguageButton(),
             const SizedBox(width: 56), // hueco del botón +
-            PopupMenuButton<_AccountAction>(
+            IconButton(
               tooltip: l.account,
               icon: const Icon(Icons.account_circle_outlined),
-              onSelected: (action) => switch (action) {
-                _AccountAction.logout =>
-                  ref.read(authProvider.notifier).logout(),
-                _AccountAction.delete => _confirmDeleteAccount(),
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: _AccountAction.logout,
-                  child: ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.logout),
-                    title: Text(l.logout),
-                  ),
-                ),
-                PopupMenuItem(
-                  value: _AccountAction.delete,
-                  child: ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(
-                      Icons.delete_forever_outlined,
-                      color: Colors.red.shade700,
-                    ),
-                    title: Text(
-                      l.deleteAccount,
-                      style: TextStyle(color: Colors.red.shade700),
-                    ),
-                  ),
-                ),
-              ],
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const AccountScreen()),
+              ),
             ),
           ],
         ),
@@ -236,26 +209,6 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
         ),
       ),
     );
-  }
-
-  /// Pide confirmar con el correo y, si coincide, elimina la cuenta.
-  Future<void> _confirmDeleteAccount() async {
-    final email = ref.read(authProvider).value?.email;
-    if (email == null) return;
-    final messenger = ScaffoldMessenger.of(context);
-    final l = context.l10n;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) => _DeleteAccountDialog(email: email),
-    );
-    if (ok != true) return;
-    try {
-      // Al eliminarse, la sesión se cierra y la app vuelve a la bienvenida.
-      await ref.read(authProvider.notifier).deleteAccount(email);
-      messenger.showSnackBar(SnackBar(content: Text(l.accountDeleted)));
-    } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(errorMessage(e, l))));
-    }
   }
 
   Future<void> _addHabit(BuildContext context, WidgetRef ref) async {
@@ -1159,67 +1112,6 @@ class _HabitRow extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-enum _AccountAction { logout, delete }
-
-/// Confirmación para eliminar la cuenta: hay que escribir el correo de la cuenta.
-class _DeleteAccountDialog extends StatefulWidget {
-  const _DeleteAccountDialog({required this.email});
-
-  final String email;
-
-  @override
-  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
-}
-
-class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
-  final _controller = TextEditingController();
-
-  bool get _matches =>
-      _controller.text.trim().toLowerCase() == widget.email.toLowerCase();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    return AlertDialog(
-      title: Text(l.deleteAccountTitle),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(l.deleteAccountBody),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _controller,
-            autocorrect: false,
-            keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              labelText: l.deleteAccountConfirm(widget.email),
-            ),
-            onChanged: (_) => setState(() {}),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(l.cancel),
-        ),
-        FilledButton(
-          style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
-          onPressed: _matches ? () => Navigator.of(context).pop(true) : null,
-          child: Text(l.deleteAccountButton),
-        ),
-      ],
     );
   }
 }
