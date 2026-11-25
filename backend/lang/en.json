@@ -17,9 +17,9 @@
     "Correo o contraseña incorrectos.": "Incorrect email or password.",
     "Sesión cerrada.": "Signed out.",
     "Las contraseñas no coinciden.": "Passwords don't match.",
-    "Tu código de verificación de Calendar Check": "Your Calendar Check verification code",
+    "Tu código de verificación de Rayita": "Your Rayita verification code",
     "Hola :name,": "Hi :name,",
-    "Usa este código para verificar tu correo en Calendar Check:": "Use this code to verify your email in Calendar Check:",
+    "Usa este código para verificar tu correo en Rayita:": "Use this code to verify your email in Rayita:",
     "El código vence en :minutes minutos. Si no creaste una cuenta, ignora este mensaje.": "The code expires in :minutes minutes. If you didn't create an account, ignore this message.",
     "Debes verificar tu correo para continuar.": "You must verify your email to continue.",
     "El código es obligatorio.": "The code is required.",
@@ -42,5 +42,7 @@
     "Los días activos deben ser una lista.": "Active days must be a list.",
     "Elige al menos un día de la semana.": "Pick at least one day of the week.",
     "Los días activos deben ir del 1 (lunes) al 7 (domingo).": "Active days must go from 1 (Monday) to 7 (Sunday).",
-    "Los días activos no pueden repetirse.": "Active days can't repeat."
+    "Los días activos no pueden repetirse.": "Active days can't repeat.",
+    "El código de invitación es obligatorio.": "The invitation code is required.",
+    "El código de invitación no es válido.": "The invitation code is not valid."
 }

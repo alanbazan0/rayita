@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\HabitController;
 use App\Http\Controllers\HabitLogController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\HabitStatsController;
 use App\Http\Middleware\EnsureEmailVerified;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/config', [ConfigController::class, 'show'])->middleware('throttle:60,1');
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 

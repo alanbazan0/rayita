@@ -17,7 +17,7 @@ class VerificationCodeMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: __('Tu código de verificación de Calendar Check'));
+        return new Envelope(subject: __('Tu código de verificación de Rayita'));
     }
 
     public function content(): Content
@@ -25,12 +25,12 @@ class VerificationCodeMail extends Mailable
         $name = e($this->userName);
         $code = e($this->code);
         $hello = e(__('Hola :name,', ['name' => $this->userName]));
-        $intro = e(__('Usa este código para verificar tu correo en Calendar Check:'));
+        $intro = e(__('Usa este código para verificar tu correo en Rayita:'));
         $expires = e(__('El código vence en :minutes minutos. Si no creaste una cuenta, ignora este mensaje.', ['minutes' => $this->minutes]));
 
         $html = <<<HTML
 <div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#17262A">
-  <h2 style="color:#5C5EDD;margin:0 0 16px">Calendar Check</h2>
+  <h2 style="color:#5C5EDD;margin:0 0 16px">Rayita</h2>
   <p>{$hello}</p>
   <p>{$intro}</p>
   <p style="font-size:34px;font-weight:700;letter-spacing:8px;background:#F2F3F8;border-radius:12px;padding:16px;text-align:center">{$code}</p>

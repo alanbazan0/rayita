@@ -17,7 +17,7 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create($request->safe()->except('password_confirmation'));
+        $user = User::create($request->safe()->except(['password_confirmation', 'invite_code']));
 
         // Si el correo falla, la cuenta queda creada y el usuario puede pedir
         // el código de nuevo desde la app.

@@ -218,7 +218,7 @@ class EmailVerificationTest extends TestCase
         $this->register(['Accept-Language' => 'en']);
 
         Mail::assertSent(VerificationCodeMail::class, function ($mail) {
-            return $mail->envelope()->subject === 'Your Calendar Check verification code'
+            return $mail->envelope()->subject === 'Your Rayita verification code'
                 && str_contains($mail->render(), 'Use this code to verify your email')
                 && str_contains($mail->render(), $mail->code);
         });
