@@ -1,0 +1,10 @@
+# Base de datos local y entorno de despliegue (nunca al repo)
+backend/database/*.sqlite
+backend/database/*.sqlite-journal
+.env.deploy
+vendor.zip
+
+# Configuración local de Claude Code
+.claude/settings.local.json
+
+.DS_Store

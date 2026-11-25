@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd backend && php artisan serve --host=localhost --port=8000"],
+      "port": 8000
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd app/build/web && python3 -m http.server 8080 --bind localhost"],
+      "port": 8080
+    }
+  ]
+}
