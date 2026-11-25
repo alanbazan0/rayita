@@ -25,6 +25,9 @@ env:
   # Remitente de los códigos de verificación (cuenta del dominio).
   MAIL_FROM_ADDRESS: support@alanbazan.com.mx
   # ID de cliente web de Google: es público (lo ve cualquiera en la web), no es un secreto.
+  # Código de invitación para registrarse: vacío = registro abierto. Para volver a exigirlo, escribe aquí
+  # el código (o usa la acción set-invite-code de "Operación del servidor", que dura hasta el próximo despliegue).
+  INVITE_CODE: ''
   GOOGLE_CLIENT_ID: 218130338023-nkbquvj85pa4ufbptm90irm2aani7ljc.apps.googleusercontent.com
 
 jobs:
@@ -94,7 +97,6 @@ jobs:
           MAIL_PORT: ${{ secrets.MAIL_PORT }}
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-          INVITE_CODE: ${{ secrets.INVITE_CODE }}
           GOOGLE_IOS_CLIENT_ID: ${{ secrets.GOOGLE_IOS_CLIENT_ID }}
         run: |
           # El puerto 465 usa TLS implícito (smtps); los demás, STARTTLS (smtp).

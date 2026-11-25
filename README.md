@@ -90,7 +90,7 @@ php artisan serve --host=localhost --port=8000
 En local el correo no se envía: el código de verificación se escribe en
 `backend/storage/logs/laravel.log` (`MAIL_MAILER=log`).
 
-**Código de invitación (opcional).** Si defines `INVITE_CODE` en `backend/.env`, registrarse exige
+**Código de invitación (opcional, desactivado en producción).** Si defines `INVITE_CODE` en `backend/.env`, registrarse exige
 ese código, en la web y en la app móvil por igual. La app consulta `GET /api/config` y solo muestra
 el campo cuando hace falta. Déjalo vacío para registro abierto, por ejemplo al publicar la app para
 todos. No afecta a quien ya tiene cuenta.
