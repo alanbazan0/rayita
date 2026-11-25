@@ -173,6 +173,5 @@ El idioma de los mensajes se toma del encabezado `Accept-Language` (`es` por def
 - **iOS:** descartado por ahora. El proyecto nativo sigue ahí por si se retoma.
 - **Políticas legales:** [privacidad](https://rayita.alanbazan.com.mx/privacidad) y
   [términos](https://rayita.alanbazan.com.mx/terminos) (también en inglés: `/privacy` y `/terms`),
-  que Google Cloud y Google Play piden como enlaces públicos. El contacto es `support@alanbazan.com.mx`. Falta
-  habilitar la eliminación de la cuenta dentro de la app (hoy es por correo).
+  que Google Cloud y Google Play piden como enlaces públicos. El contacto es `support@alanbazan.com.mx`. (la eliminación de la cuenta ya existe: menú Cuenta → Eliminar cuenta, y la página pública `/eliminar-cuenta`).
 - Más adelante, cuando la app esté probada: quitar el correo y la contraseña y dejar solo Google (el código ya lo permite).

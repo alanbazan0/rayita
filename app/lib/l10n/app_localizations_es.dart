@@ -442,4 +442,28 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get goalRestartFromStreak =>
       'Contar desde el inicio de mi racha actual';
+
+  @override
+  String get account => 'Cuenta';
+
+  @override
+  String get deleteAccount => 'Eliminar cuenta';
+
+  @override
+  String get deleteAccountTitle => '¿Eliminar tu cuenta?';
+
+  @override
+  String get deleteAccountBody =>
+      'Se borrarán para siempre tu cuenta, tus hábitos y todas tus marcas. No se puede deshacer.';
+
+  @override
+  String deleteAccountConfirm(String email) {
+    return 'Escribe tu correo ($email) para confirmar';
+  }
+
+  @override
+  String get deleteAccountButton => 'Eliminar para siempre';
+
+  @override
+  String get accountDeleted => 'Tu cuenta fue eliminada.';
 }

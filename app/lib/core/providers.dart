@@ -60,6 +60,13 @@ class AuthNotifier extends AsyncNotifier<User?> {
     state = AsyncData(user);
   }
 
+  /// Elimina la cuenta y deja la app sin sesión.
+  Future<void> deleteAccount(String email) async {
+    await ref.read(apiProvider).deleteAccount(email);
+    state = const AsyncData(null);
+    if (!kIsWeb) unawaited(ref.read(googleAuthProvider).signOut());
+  }
+
   Future<void> logout() async {
     try {
       await ref.read(apiProvider).logout();

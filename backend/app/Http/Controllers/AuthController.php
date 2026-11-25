@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\GoogleLoginException;
+use App\Http\Requests\DeleteAccountRequest;
 use App\Http\Requests\GoogleLoginRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
@@ -13,6 +14,7 @@ use App\Services\InviteCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -108,6 +110,31 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json(['user' => $request->user()]);
+    }
+
+    /**
+     * Elimina la cuenta y todo lo suyo (hábitos y marcas caen en cascada) y cierra todas sus
+     * sesiones. Exige escribir el correo de la cuenta. Permitido aunque el correo no esté verificado.
+     */
+    public function destroy(DeleteAccountRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! hash_equals(mb_strtolower($user->email), mb_strtolower(trim($request->validated('email'))))) {
+            throw ValidationException::withMessages([
+                'email' => [__('El correo no coincide con el de tu cuenta.')],
+            ]);
+        }
+
+        $id = $user->id;
+        DB::transaction(function () use ($user) {
+            $user->tokens()->delete();
+            $user->delete();
+        });
+
+        Log::info('Cuenta eliminada por su titular', ['user_id' => $id]);
+
+        return response()->json(['message' => __('Tu cuenta fue eliminada.')]);
     }
 
     public function logout(Request $request): JsonResponse

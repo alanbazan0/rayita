@@ -781,6 +781,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Contar desde el inicio de mi racha actual'**
   String get goalRestartFromStreak;
+
+  /// No description provided for @account.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta'**
+  String get account;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar cuenta'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar tu cuenta?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se borrarán para siempre tu cuenta, tus hábitos y todas tus marcas. No se puede deshacer.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe tu correo ({email}) para confirmar'**
+  String deleteAccountConfirm(String email);
+
+  /// No description provided for @deleteAccountButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar para siempre'**
+  String get deleteAccountButton;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta fue eliminada.'**
+  String get accountDeleted;
 }
 
 class _AppLocalizationsDelegate

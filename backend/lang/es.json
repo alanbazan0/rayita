@@ -47,5 +47,8 @@
     "El código de invitación no es válido.": "El código de invitación no es válido.",
     "Falta el token de Google.": "Falta el token de Google.",
     "No se pudo verificar tu cuenta de Google.": "No se pudo verificar tu cuenta de Google.",
-    "El inicio de sesión con Google no está disponible.": "El inicio de sesión con Google no está disponible."
+    "El inicio de sesión con Google no está disponible.": "El inicio de sesión con Google no está disponible.",
+    "El correo no coincide con el de tu cuenta.": "El correo no coincide con el de tu cuenta.",
+    "Tu cuenta fue eliminada.": "Tu cuenta fue eliminada.",
+    "Escribe el correo de tu cuenta para confirmar.": "Escribe el correo de tu cuenta para confirmar."
 }

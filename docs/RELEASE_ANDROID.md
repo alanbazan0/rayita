@@ -50,8 +50,10 @@ Conserva símbolos y mapa de cada versión publicada.
 6. **Seguridad de los datos**: recopila nombre, correo, identificador de usuario y contenido del usuario
    (hábitos y marcas); se cifra en tránsito (HTTPS); no se comparte con terceros; no hay publicidad.
 7. **Clasificación de contenido**, **público objetivo** (no dirigida a menores de 13) y **anuncios: no**.
-8. **Eliminación de cuenta** *(bloqueante, aún no implementada)*: Play exige que la app permita eliminar la
-   cuenta **dentro de la app** y un enlace web para pedirlo. Hoy solo se puede por correo.
+8. **Eliminación de cuenta** (ya implementada): dentro de la app, menú **Cuenta → Eliminar cuenta**
+   (se confirma escribiendo el correo). URL pública que Play pide para solicitarla:
+   `https://rayita.alanbazan.com.mx/eliminar-cuenta` (en inglés: `/delete-account`). Pégala en
+   *Contenido de la app → Seguridad de los datos → Eliminación de datos*.
 9. Probar primero en **prueba interna**, luego **cerrada** y al final **producción**.
 
 ## 5. Inicio de sesión con Google en la versión publicada

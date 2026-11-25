@@ -241,5 +241,19 @@
   "googleInviteBody": "Para crear tu cuenta con Google necesitas un código de invitación.",
   "continueLabel": "Continuar",
   "googleFailed": "No se pudo iniciar sesión con Google.",
-  "goalRestartFromStreak": "Contar desde el inicio de mi racha actual"
+  "goalRestartFromStreak": "Contar desde el inicio de mi racha actual",
+  "account": "Cuenta",
+  "deleteAccount": "Eliminar cuenta",
+  "deleteAccountTitle": "¿Eliminar tu cuenta?",
+  "deleteAccountBody": "Se borrarán para siempre tu cuenta, tus hábitos y todas tus marcas. No se puede deshacer.",
+  "deleteAccountConfirm": "Escribe tu correo ({email}) para confirmar",
+  "deleteAccountButton": "Eliminar para siempre",
+  "accountDeleted": "Tu cuenta fue eliminada.",
+  "@deleteAccountConfirm": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  }
 }

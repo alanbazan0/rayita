@@ -17,6 +17,7 @@ Route::post('/google', [AuthController::class, 'google'])->middleware('throttle:
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::delete('/me', [AuthController::class, 'destroy'])->middleware('throttle:5,1');
 
     // Verificación de correo (permitida aunque el correo aún no esté verificado).
     Route::post('/email/verify', [EmailVerificationController::class, 'verify'])->middleware('throttle:20,1');

@@ -4,4 +4,6 @@ Allow: /privacidad
 Allow: /terminos
 Allow: /privacy
 Allow: /terms
+Allow: /eliminar-cuenta
+Allow: /delete-account
 Disallow: /

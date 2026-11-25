@@ -167,6 +167,12 @@ class Api {
     }
   }
 
+  /// Elimina la cuenta y todo lo suyo; se confirma con el correo de la cuenta.
+  Future<void> deleteAccount(String email) async {
+    await dio.delete('/me', data: {'email': email});
+    await tokens.clear();
+  }
+
   Future<List<Habit>> habits() async {
     final res = await dio.get('/habits');
     return (res.data['data'] as List)

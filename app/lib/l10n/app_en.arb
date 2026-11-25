@@ -120,5 +120,12 @@
   "googleInviteBody": "To create your account with Google you need an invitation code.",
   "continueLabel": "Continue",
   "googleFailed": "Couldn't sign in with Google.",
-  "goalRestartFromStreak": "Count from the start of my current streak"
+  "goalRestartFromStreak": "Count from the start of my current streak",
+  "account": "Account",
+  "deleteAccount": "Delete account",
+  "deleteAccountTitle": "Delete your account?",
+  "deleteAccountBody": "Your account, habits and all your marks will be permanently deleted. This can't be undone.",
+  "deleteAccountConfirm": "Type your email ({email}) to confirm",
+  "deleteAccountButton": "Delete forever",
+  "accountDeleted": "Your account has been deleted."
 }

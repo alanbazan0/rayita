@@ -47,5 +47,8 @@
     "El código de invitación no es válido.": "The invitation code is not valid.",
     "Falta el token de Google.": "The Google token is missing.",
     "No se pudo verificar tu cuenta de Google.": "We couldn't verify your Google account.",
-    "El inicio de sesión con Google no está disponible.": "Google sign-in is not available."
+    "El inicio de sesión con Google no está disponible.": "Google sign-in is not available.",
+    "El correo no coincide con el de tu cuenta.": "The email doesn't match your account's email.",
+    "Tu cuenta fue eliminada.": "Your account has been deleted.",
+    "Escribe el correo de tu cuenta para confirmar.": "Enter your account's email to confirm."
 }

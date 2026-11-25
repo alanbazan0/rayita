@@ -164,4 +164,22 @@ void main() {
       expect(body['today'], matches(RegExp(r'^\d{4}-\d{2}-\d{2}$')));
     },
   );
+
+  test(
+    'deleteAccount manda DELETE /me con el correo y borra la sesión local',
+    () async {
+      final tokens = _MemoryTokens()..value = 'abc';
+      final dio = Dio(BaseOptions(baseUrl: 'http://test/api'))
+        ..httpClientAdapter = adapter;
+      final api2 = Api(dio: dio, tokens: tokens);
+      adapter.response = {'message': 'ok'};
+
+      await api2.deleteAccount('ana@example.com');
+
+      expect(adapter.last!.method, 'DELETE');
+      expect(adapter.last!.path, '/me');
+      expect(adapter.last!.data, {'email': 'ana@example.com'});
+      expect(tokens.value, isNull);
+    },
+  );
 }
