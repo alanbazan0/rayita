@@ -1,11 +1,14 @@
-# Calendar Check
+# Rayita
+
+[github.com/alanbazan0/rayita](https://github.com/alanbazan0/rayita)
 
 Rastreador de hábitos con **calendario**, **rachas** y **conteo con palitos** (las rayitas
 tachadas de a cinco). Marca cada día como cumplido o parcial, mira crecer tus marcas y
 ponle una meta a cada hábito, por ejemplo *"No fumar durante 10 días"*.
 
-Tiene una API en Laravel y una app en Flutter que corre en **web, Android e iOS**, en
-español e inglés (se elige solo según el idioma del sistema y se puede cambiar en la app).
+Tiene una API en Laravel y una **app móvil en Flutter para Android e iOS**, en español e
+inglés (se elige solo según el idioma del sistema y se puede cambiar en la app). La versión
+web de Flutter es para pruebas: se publica, pero sin difundir el enlace a los usuarios.
 
 ## Capturas
 
@@ -51,10 +54,12 @@ español e inglés (se elige solo según el idioma del sistema y se puede cambia
 ## Estructura
 
 ```
-calendar_check/
+rayita/
 ├── backend/   API Laravel (modelos, controladores, servicios, tests)
 ├── app/       App Flutter (lib/core, lib/screens, lib/widgets, lib/l10n, test)
-└── docs/      Capturas de pantalla
+├── deploy/    extract.php (servidor) y set-github-secrets.sh
+├── .github/   Workflows de despliegue (API, web y operación)
+└── docs/      Capturas de pantalla y guía de despliegue
 ```
 
 La lógica de negocio vive en servicios probados por separado:
@@ -63,6 +68,11 @@ La lógica de negocio vive en servicios probados por separado:
 ## Puesta en marcha (local)
 
 Necesitas PHP 8.3 + Composer y Flutter.
+
+```bash
+git clone https://github.com/alanbazan0/rayita.git
+cd rayita
+```
 
 **1. API**
 
@@ -79,12 +89,18 @@ php artisan serve --host=localhost --port=8000
 En local el correo no se envía: el código de verificación se escribe en
 `backend/storage/logs/laravel.log` (`MAIL_MAILER=log`).
 
+**Código de invitación (opcional).** Si defines `INVITE_CODE` en `backend/.env`, registrarse exige
+ese código, en la web y en la app móvil por igual. La app consulta `GET /api/config` y solo muestra
+el campo cuando hace falta. Déjalo vacío para registro abierto, por ejemplo al publicar la app para
+todos. No afecta a quien ya tiene cuenta.
+
 **2. App**
 
 ```bash
 cd app
 flutter pub get
-flutter run -d chrome
+flutter run                 # en un emulador o dispositivo Android / iOS
+flutter run -d chrome       # opcional: vista previa rápida en el navegador (solo desarrollo)
 ```
 
 La app apunta a `http://localhost:8000/api` (en el emulador de Android, `10.0.2.2`). Para
@@ -96,8 +112,8 @@ cambiarlo: `--dart-define=API_URL=https://tu-dominio/api`.
 ## Pruebas
 
 ```bash
-cd backend && php artisan test     # 116 pruebas (unitarias y de funcionalidad)
-cd app && flutter analyze && flutter test   # 53 pruebas
+cd backend && php artisan test     # 126 pruebas (unitarias y de funcionalidad)
+cd app && flutter analyze && flutter test   # 67 pruebas
 ```
 
 ## API en resumen
@@ -107,7 +123,8 @@ y un correo verificado.
 
 | Método | Ruta | Para qué |
 | --- | --- | --- |
-| POST | `/register`, `/login` | Crear cuenta e iniciar sesión (devuelve el token) |
+| GET | `/config` | Ajustes públicos (si el registro pide código de invitación) |
+| POST | `/register`, `/login` | Crear cuenta (con `invite_code` si se exige) e iniciar sesión (devuelve el token) |
 | GET / POST | `/me`, `/logout` | Usuario actual y cerrar sesión |
 | POST | `/email/verify`, `/email/resend` | Verificar el correo con el código / reenviarlo |
 | 🔒 | `/habits` (`apiResource`) | Listar, crear, ver, editar y borrar hábitos |
@@ -120,9 +137,12 @@ El idioma de los mensajes se toma del encabezado `Accept-Language` (`es` por def
 ## Estado y pendientes
 
 - La app y la API funcionan completas en local.
-- **Despliegue (pendiente):** está pensado para hosting compartido (HostGator, sin SSH):
-  `vendor/` comprimido en `vendor.zip`, subida por FTP con GitHub Actions o un `deploy.sh`,
-  y un endpoint protegido por token para correr migraciones. Aún no está implementado.
-- **Correo en producción:** falta configurar el SMTP del hosting para enviar los códigos.
-- **Android e iOS:** las plataformas y los íconos están configurados, pero solo se ha probado la versión web.
+- **Despliegue (listo, sin ejecutar todavía):** API y web de pruebas en subdominios de HostGator
+  (`rayita_app/` y `rayita_api/`), por FTP con GitHub Actions o con `./deploy.sh`, y un
+  `deploy.php` protegido por token para extraer, migrar y consultar logs sin SSH. Falta cargar los
+  secretos y hacer el primer despliegue; la guía está en [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+  La web no se indexa en buscadores. La app móvil se distribuirá por Google Play y App Store.
+- **Correo en producción:** falta crear la cuenta de correo del hosting; sus datos van en los secretos `MAIL_*`.
+- **Android e iOS:** las plataformas y los íconos están configurados, pero la interfaz solo se ha
+  probado hasta ahora en el modo web de desarrollo; falta probarla en emuladores o dispositivos.
 - Más adelante: sustituir correo y contraseña por inicio de sesión con Google.
