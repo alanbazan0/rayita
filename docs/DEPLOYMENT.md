@@ -37,7 +37,7 @@ vez desde `.env.deploy` con `deploy/set-github-secrets.sh`.
 
 ## Correo de los códigos de verificación
 
-Por defecto se envía con el `sendmail` del servidor desde `noreply@alanbazan.com.mx`
+Por defecto se envía con el `sendmail` del servidor desde `rayita@alanbazan.com.mx`
 (`MAIL_FROM_ADDRESS`, en el `env:` de `deploy-api.yml`). No necesita contraseña. Para que los
 mensajes no caigan en spam, en cPanel → **Email Deliverability** deja el dominio con SPF y DKIM
 válidos. Si luego creas una cuenta propia, carga los secretos `MAIL_HOST`, `MAIL_PORT`,

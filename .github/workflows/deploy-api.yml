@@ -23,7 +23,7 @@ env:
   DEPLOY_DIR: rayita_deploy/
   FTP_PORT: '21'
   # Remitente de los códigos de verificación (cuenta del dominio).
-  MAIL_FROM_ADDRESS: noreply@alanbazan.com.mx
+  MAIL_FROM_ADDRESS: rayita@alanbazan.com.mx
 
 jobs:
   deploy:
