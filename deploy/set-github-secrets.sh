@@ -18,15 +18,10 @@ set_secret() {  # set_secret <NOMBRE_EN_GITHUB> <valor>
 }
 
 echo "Cargando secretos en $REPO ..."
-set_secret FTP_HOST        "$FTP_SERVER"
-set_secret FTP_PORT        "${FTP_PORT:-21}"
+# Las URL, carpetas y el puerto FTP no son secretos: están escritos en los workflows.
+set_secret FTP_SERVER      "$FTP_SERVER"
 set_secret FTP_USER        "$FTP_USER"
-set_secret FTP_PASSWORD    "$FTP_PASS"
-set_secret APP_DIR         "${APP_DIR:-rayita_app/}"
-set_secret DEPLOY_DIR      "${DEPLOY_DIR:-rayita_deploy/}"
-set_secret WEB_URL         "$APP_URL"
-set_secret API_URL         "$API_URL"
-set_secret API_BASE_URL    "$API_URL/api"
+set_secret FTP_PASS        "$FTP_PASS"
 set_secret DEPLOY_TOKEN    "$MIGRATE_TOKEN"
 set_secret APP_KEY         "$APP_KEY"
 set_secret DB_DATABASE     "$DB_DATABASE"

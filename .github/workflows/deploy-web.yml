@@ -15,6 +15,12 @@ concurrency:
   group: deploy-web
   cancel-in-progress: false
 
+# Valores que no son secretos (se ven en cualquier navegador).
+env:
+  API_BASE_URL: https://api.rayita.alanbazan.com.mx/api
+  APP_DIR: rayita_app/
+  FTP_PORT: '21'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -40,7 +46,7 @@ jobs:
         working-directory: app
         run: >
           flutter build web --release --pwa-strategy=none --base-href /
-          --dart-define=API_URL=${{ secrets.API_BASE_URL }}
+          --dart-define=API_URL=${{ env.API_BASE_URL }}
 
       - name: Agregar el extractor de despliegue
         env:
@@ -50,10 +56,10 @@ jobs:
       - name: Subir la web a rayita_app/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_HOST }}
+          server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
+          password: ${{ secrets.FTP_PASS }}
+          port: ${{ env.FTP_PORT }}
           protocol: ftp
           local-dir: ./app/build/web/
-          server-dir: ${{ secrets.APP_DIR }}
+          server-dir: ${{ env.APP_DIR }}

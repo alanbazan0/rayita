@@ -20,6 +20,9 @@ on:
         required: false
         type: string
 
+env:
+  WEB_URL: https://rayita.alanbazan.com.mx
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -27,7 +30,6 @@ jobs:
       - name: Ejecutar la acción
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-          WEB_URL: ${{ secrets.WEB_URL }}
           ACTION: ${{ inputs.action }}
           VALUE: ${{ inputs.value }}
         run: |

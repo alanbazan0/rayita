@@ -19,26 +19,28 @@ La web se publica solo para pruebas: lleva `noindex` (meta, `robots.txt` y cabec
 
 ## Secretos de GitHub
 
-Se cargan solos con `deploy/set-github-secrets.sh` a partir de `.env.deploy` (ver abajo).
+Solo son secretos las credenciales. Las URL, las carpetas (`rayita_app/`, `rayita_deploy/`) y el
+puerto FTP (21) no lo son y están escritos en los workflows (`env:` al inicio de cada archivo).
 
 | Secreto | Valor |
 | --- | --- |
-| `FTP_HOST`, `FTP_PORT`, `FTP_USER`, `FTP_PASSWORD` | FTP de HostGator (hostname real del servidor, no el dominio) |
-| `APP_DIR` / `DEPLOY_DIR` | `rayita_app/` y `rayita_deploy/` |
-| `WEB_URL` | `https://rayita.alanbazan.com.mx` (donde vive `deploy.php`) |
-| `API_URL` / `API_BASE_URL` | `https://api.rayita.alanbazan.com.mx` y esa misma con `/api` |
-| `DEPLOY_TOKEN` | Cadena aleatoria larga (`openssl rand -hex 32`) |
+| `FTP_SERVER` | Hostname real del servidor FTP (no el dominio), tipo `gator1234.hostgator.com` |
+| `FTP_USER` / `FTP_PASS` | Cuenta FTP con acceso a `/public_html/projects` |
+| `DEPLOY_TOKEN` | Cadena aleatoria larga (`openssl rand -hex 32`); protege `deploy.php` |
 | `APP_KEY` | `cd backend && php artisan key:generate --show` |
 | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Base MySQL creada en cPanel (HostGator antepone el usuario de cPanel) |
 | `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` | Cuenta de correo del hosting (puerto 465 = TLS) |
-| `INVITE_CODE` | Código para registrarse; vacío = registro abierto |
+| `INVITE_CODE` | Código para registrarse; vacío o ausente = registro abierto |
+
+Se pueden crear a mano en *Settings → Secrets and variables → Actions*, o cargar todos de una
+vez desde `.env.deploy` con `deploy/set-github-secrets.sh`.
 
 ## Primer despliegue
 
 1. En cPanel: crea la base MySQL, su usuario (con todos los privilegios) y la cuenta de correo
    `no-reply@…`. Confirma que `api.rayita…` tenga SSL (AutoSSL).
 2. `cp .env.deploy.example .env.deploy` y llénalo (ese archivo nunca se sube al repo).
-3. `deploy/set-github-secrets.sh` para cargar los secretos.
+3. Cargar los secretos (a mano en GitHub o con `deploy/set-github-secrets.sh`).
 4. Ejecuta primero **Deploy Web** (sube `deploy.php`) y luego **Deploy API**, desde la pestaña
    Actions (*Run workflow*). Después, cada push a `main` despliega lo que cambió.
 5. Comprueba `https://api.rayita.alanbazan.com.mx/api/config`: debe responder 200.

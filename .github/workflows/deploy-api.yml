@@ -16,6 +16,13 @@ concurrency:
   group: deploy-api
   cancel-in-progress: false
 
+# Valores que no son secretos (se ven en cualquier navegador).
+env:
+  WEB_URL: https://rayita.alanbazan.com.mx
+  API_URL: https://api.rayita.alanbazan.com.mx
+  DEPLOY_DIR: rayita_deploy/
+  FTP_PORT: '21'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -56,18 +63,17 @@ jobs:
       - name: Subir api.zip a rayita_deploy/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_HOST }}
+          server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
+          password: ${{ secrets.FTP_PASS }}
+          port: ${{ env.FTP_PORT }}
           protocol: ftp
           local-dir: ./staging/
-          server-dir: ${{ secrets.DEPLOY_DIR }}
+          server-dir: ${{ env.DEPLOY_DIR }}
 
       - name: Descomprimir en el servidor
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-          WEB_URL: ${{ secrets.WEB_URL }}
         run: |
           out=$(curl -fsS -H "X-Deploy-Token: $DEPLOY_TOKEN" "$WEB_URL/deploy.php")
           echo "$out"
@@ -76,8 +82,6 @@ jobs:
       - name: Generar .env de producción y subirlo por HTTPS
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-          WEB_URL: ${{ secrets.WEB_URL }}
-          API_URL: ${{ secrets.API_URL }}
           APP_KEY: ${{ secrets.APP_KEY }}
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
@@ -127,19 +131,18 @@ jobs:
       - name: Migraciones
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-          WEB_URL: ${{ secrets.WEB_URL }}
-        run: curl -fsS -H "X-Deploy-Token: $DEPLOY_TOKEN" "$WEB_URL/deploy.php?action=migrate"
+        run: |
+          curl -fsS -H "X-Deploy-Token: $DEPLOY_TOKEN" "$WEB_URL/deploy.php?action=migrate"
 
       - name: Cachés de config, rutas y vistas
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-          WEB_URL: ${{ secrets.WEB_URL }}
-        run: curl -fsS -H "X-Deploy-Token: $DEPLOY_TOKEN" "$WEB_URL/deploy.php?action=optimize"
+        run: |
+          curl -fsS -H "X-Deploy-Token: $DEPLOY_TOKEN" "$WEB_URL/deploy.php?action=optimize"
 
       - name: Verificar que la API responde
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-          WEB_URL: ${{ secrets.WEB_URL }}
         run: |
           out=$(curl -fsS -H "X-Deploy-Token: $DEPLOY_TOKEN" "$WEB_URL/deploy.php?action=diag")
           echo "$out"
