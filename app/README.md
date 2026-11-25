@@ -1,6 +1,6 @@
-# Calendar Check (app)
+# Rayita (app)
 
-App Flutter (Android, iOS y Web) de Calendar Check, un rastreador de hábitos con
+App Flutter (Android e iOS, con web para pruebas) de Rayita, un rastreador de hábitos con
 calendario mensual, rachas y conteo con palitos. Usa Riverpod, Dio y
 `flutter_secure_storage`. Idiomas: español e inglés.
 

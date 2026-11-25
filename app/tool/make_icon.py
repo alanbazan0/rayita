@@ -1,4 +1,4 @@
-"""Genera el ícono de la app (assets/icon/*.png) con Pillow.
+"""Genera el ícono de la app (assets/icon/*.png) y los íconos web con Pillow.
 
 Uso: python3 tool/make_icon.py
 Diseño: marcas de conteo (4 rayas + la tachada del 5.º) sobre el degradado índigo.
@@ -34,14 +34,14 @@ def s(v):
     return int(v * SS)
 
 
-def tally_layer():
+def tally_layer(bar_w=60, shadow=True):
     """Marcas de conteo sobre fondo transparente (con sombra).
 
     Todo queda dentro de la zona segura del ícono adaptable de Android (~66 %).
     """
     layer = Image.new("RGBA", (S, S), (0, 0, 0, 0))
 
-    bar_w, top, bottom = 60, 292, 732
+    top, bottom = 292, 732
     xs = [344, 456, 568, 680]
     white = (255, 255, 255, 255)
     amber = (255, 209, 102, 255)
@@ -60,10 +60,11 @@ def tally_layer():
             d.ellipse([s(p[0] - r), s(p[1] + dy - r), s(p[0] + r), s(p[1] + dy + r)], fill=flat or amber)
 
     # Sombra suave.
-    shadow = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    draw_marks(ImageDraw.Draw(shadow), dy=20, flat=(20, 22, 90, 110))
-    shadow = shadow.filter(ImageFilter.GaussianBlur(s(18)))
-    layer = Image.alpha_composite(layer, shadow)
+    if shadow:
+        sh = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+        draw_marks(ImageDraw.Draw(sh), dy=20, flat=(20, 22, 90, 110))
+        sh = sh.filter(ImageFilter.GaussianBlur(s(18)))
+        layer = Image.alpha_composite(layer, sh)
 
     draw_marks(ImageDraw.Draw(layer))
     return layer
@@ -88,4 +89,34 @@ for name, scale in (("LaunchImage.png", 1), ("LaunchImage@2x.png", 2), ("LaunchI
     side = 168 * scale
     canvas.paste(crop.resize((side, side), Image.LANCZOS), (0, (h - side) // 2))
     canvas.save(f"ios/Runner/Assets.xcassets/LaunchImage.imageset/{name}")
+
+# --- Web: favicon y los íconos de la PWA/pestaña -----------------------------
+# El favicon es un recorte del ícono con las rayitas más gruesas y sin sombra,
+# para que se lea a 16-32 px. Las esquinas van redondeadas.
+def rounded(img, radius_ratio=0.22):
+    mask = Image.new("L", img.size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle(
+        [0, 0, img.size[0] - 1, img.size[1] - 1], radius=int(img.size[0] * radius_ratio), fill=255
+    )
+    out = img.convert("RGBA")
+    out.putalpha(mask)
+    return out
+
+
+fav_src = Image.alpha_composite(bg, tally_layer(bar_w=92, shadow=False)).convert("RGBA")
+fav_src = fav_src.resize((SIZE, SIZE), Image.LANCZOS).crop((150, 150, 874, 874))
+for px in (16, 32, 48, 64):
+    fav = rounded(fav_src.resize((px, px), Image.LANCZOS))
+    fav.save(f"web/favicon-{px}.png")
+rounded(fav_src.resize((48, 48), Image.LANCZOS)).save("web/favicon.png")
+rounded(fav_src.resize((256, 256), Image.LANCZOS)).save(
+    "web/favicon.ico", sizes=[(16, 16), (32, 32), (48, 48), (64, 64)]
+)
+
+# Íconos de la PWA (192/512) con el diseño completo; los "maskable" llevan el
+# contenido dentro de la zona segura (el diseño ya la respeta).
+full = to_size(icon, "RGB")
+for px in (192, 512):
+    full.resize((px, px), Image.LANCZOS).save(f"web/icons/Icon-{px}.png")
+    full.resize((px, px), Image.LANCZOS).save(f"web/icons/Icon-maskable-{px}.png")
 print("ok")

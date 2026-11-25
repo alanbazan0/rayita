@@ -1,0 +1,23 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Flutter web (SPA): cualquier ruta que no sea un archivo o carpeta va a index.html.
+  # OJO: sin reglas de /api aquí; la API vive en api.rayita.alanbazan.com.mx
+  # (otro subdominio). Mezclarlas causó un error 500 en Noxa.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Web de pruebas: que los buscadores no la indexen aunque alguien encuentre el enlace.
+  Header set X-Robots-Tag "noindex, nofollow, noarchive"
+
+  # Estos archivos no llevan hash en el nombre; "no-store" evita que Chrome
+  # se quede con una versión vieja después de un despliegue.
+  <FilesMatch "^(index\.html|flutter_bootstrap\.js|flutter_service_worker\.js|version\.json|main\.dart\.js)$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+</IfModule>

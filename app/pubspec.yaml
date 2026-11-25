@@ -1,5 +1,5 @@
 name: calendar_check
-description: "Calendar Check: rastreador de hábitos con calendario, rachas y conteo con palitos."
+description: "Rayita: rastreador de hábitos con calendario, rachas y conteo con palitos."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -107,8 +107,6 @@ flutter_launcher_icons:
   remove_alpha_ios: true
   adaptive_icon_background: "#5C5EDD"
   adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  # La web (favicon e íconos de la PWA) la genera tool/make_icon.py.
   web:
-    generate: true
-    image_path: "assets/icon/app_icon.png"
-    background_color: "#5C5EDD"
-    theme_color: "#5C5EDD"
+    generate: false
