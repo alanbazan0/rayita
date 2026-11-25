@@ -436,4 +436,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get googleFailed => 'Couldn\'t sign in with Google.';
+
+  @override
+  String get goalRestartFromStreak =>
+      'Count from the start of my current streak';
 }

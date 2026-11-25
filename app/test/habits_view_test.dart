@@ -11,11 +11,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'test_app.dart';
 
 class _FakeApi extends Api {
+  int habitsCalls = 0;
+
   @override
-  Future<List<Habit>> habits() async => const [
-    Habit(id: 1, name: 'Leer', color: '#0EA5E9', icon: 'menu_book'),
-    Habit(id: 2, name: 'Meditar', color: '#8B5CF6'),
-  ];
+  Future<List<Habit>> habits() async {
+    habitsCalls++;
+    return const [
+      Habit(id: 1, name: 'Leer', color: '#0EA5E9', icon: 'menu_book'),
+      Habit(id: 2, name: 'Meditar', color: '#8B5CF6'),
+    ];
+  }
 
   @override
   Future<List<HabitLog>> logs(int habitId, String month) async => [];
@@ -49,17 +54,19 @@ class _FakeApi extends Api {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> pumpHome(WidgetTester tester) async {
+  Future<_FakeApi> pumpHome(WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1800);
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.reset);
+    final api = _FakeApi();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [apiProvider.overrideWithValue(_FakeApi())],
+        overrides: [apiProvider.overrideWithValue(api)],
         child: testApp(home: const HabitsScreen()),
       ),
     );
     await tester.pumpAndSettle();
+    return api;
   }
 
   testWidgets('por defecto se ven tarjetas', (tester) async {
@@ -98,6 +105,29 @@ void main() {
     await pumpHome(tester);
     expect(find.text('días de racha'), findsNothing);
     expect(find.textContaining('🔥 3 días'), findsNWidgets(2));
+  });
+
+  testWidgets('deslizar hacia abajo vuelve a pedir los hábitos', (
+    tester,
+  ) async {
+    final api = await pumpHome(tester);
+    final antes = api.habitsCalls;
+
+    await tester.fling(find.byType(ListView), const Offset(0, 500), 1000);
+    await tester.pumpAndSettle();
+
+    expect(api.habitsCalls, greaterThan(antes));
+  });
+
+  testWidgets('al volver a la app se refresca la lista', (tester) async {
+    final api = await pumpHome(tester);
+    final antes = api.habitsCalls;
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+
+    expect(api.habitsCalls, greaterThan(antes));
   });
 
   test('ViewModeNotifier ignora valores guardados que no conoce', () async {

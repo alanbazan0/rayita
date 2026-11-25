@@ -18,11 +18,52 @@ import '../widgets/tally_marks.dart';
 import '../widgets/ui.dart';
 import 'habit_detail_screen.dart';
 
-class HabitsScreen extends ConsumerWidget {
+class HabitsScreen extends ConsumerStatefulWidget {
   const HabitsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HabitsScreen> createState() => _HabitsScreenState();
+}
+
+class _HabitsScreenState extends ConsumerState<HabitsScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Al volver a la app (o a la pestaña del navegador) se recarga lo que se
+  /// haya cambiado desde otro dispositivo.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshAll();
+  }
+
+  void _refreshAll() {
+    ref.invalidate(habitsProvider);
+    ref.invalidate(logsProvider);
+    ref.invalidate(statsProvider);
+  }
+
+  /// Deslizar hacia abajo: vuelve a pedir hábitos, marcas y estadísticas.
+  Future<void> _onRefresh() async {
+    _refreshAll();
+    try {
+      await ref.read(habitsProvider.future);
+    } catch (_) {
+      // El error ya se muestra en la pantalla (con su botón de reintentar).
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final habits = ref.watch(habitsProvider);
     final view = ref.watch(viewModeProvider);
     final l = context.l10n;
@@ -96,57 +137,69 @@ class HabitsScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                data: (list) => list.isEmpty
-                    ? _EmptyState(text: l.noHabits)
-                    : ListView(
-                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-                        children: [
-                          FadeSlideIn(child: _TodaySummary(habits: list)),
-                          const SizedBox(height: 22),
-                          _SectionTitle(
-                            title: l.todayLabel,
-                            action: l.newHabit,
-                            onAction: () => _addHabit(context, ref),
-                            view: view,
-                            onView: ref.read(viewModeProvider.notifier).set,
-                          ),
-                          const SizedBox(height: 28),
-                          if (view == HabitsView.list)
-                            for (var i = 0; i < list.length; i++) ...[
-                              FadeSlideIn(
-                                index: i + 1,
-                                child: _HabitRow(habit: list[i]),
-                              ),
-                              const SizedBox(height: 12),
-                            ]
-                          else
-                            LayoutBuilder(
-                              builder: (context, c) {
-                                const gap = 14.0;
-                                final cols = (c.maxWidth / 190).floor().clamp(
-                                  2,
-                                  5,
-                                );
-                                final w =
-                                    (c.maxWidth - gap * (cols - 1)) / cols;
-                                return Wrap(
-                                  spacing: gap,
-                                  runSpacing: gap + 16,
-                                  children: [
-                                    for (var i = 0; i < list.length; i++)
-                                      FadeSlideIn(
-                                        index: i + 1,
-                                        child: SizedBox(
-                                          width: w,
-                                          child: _HabitCard(habit: list[i]),
-                                        ),
-                                      ),
-                                  ],
-                                );
-                              },
+                data: (list) => RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  child: list.isEmpty
+                      ? LayoutBuilder(
+                          builder: (context, c) => SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: SizedBox(
+                              height: c.maxHeight,
+                              child: _EmptyState(text: l.noHabits),
                             ),
-                        ],
-                      ),
+                          ),
+                        )
+                      : ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+                          children: [
+                            FadeSlideIn(child: _TodaySummary(habits: list)),
+                            const SizedBox(height: 22),
+                            _SectionTitle(
+                              title: l.todayLabel,
+                              action: l.newHabit,
+                              onAction: () => _addHabit(context, ref),
+                              view: view,
+                              onView: ref.read(viewModeProvider.notifier).set,
+                            ),
+                            const SizedBox(height: 28),
+                            if (view == HabitsView.list)
+                              for (var i = 0; i < list.length; i++) ...[
+                                FadeSlideIn(
+                                  index: i + 1,
+                                  child: _HabitRow(habit: list[i]),
+                                ),
+                                const SizedBox(height: 12),
+                              ]
+                            else
+                              LayoutBuilder(
+                                builder: (context, c) {
+                                  const gap = 14.0;
+                                  final cols = (c.maxWidth / 190).floor().clamp(
+                                    2,
+                                    5,
+                                  );
+                                  final w =
+                                      (c.maxWidth - gap * (cols - 1)) / cols;
+                                  return Wrap(
+                                    spacing: gap,
+                                    runSpacing: gap + 16,
+                                    children: [
+                                      for (var i = 0; i < list.length; i++)
+                                        FadeSlideIn(
+                                          index: i + 1,
+                                          child: SizedBox(
+                                            width: w,
+                                            child: _HabitCard(habit: list[i]),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
+                ),
               ),
             ),
           ],

@@ -71,6 +71,7 @@ class _HabitDialogState extends State<HabitDialog> {
   late DateTime? _end = _parseDay(widget.initial?.goalEnd);
   late String _onFail = widget.initial?.goalOnFail ?? 'reset';
   String? _goalError;
+  bool _restartFromStreak = false;
 
   static DateTime? _parseDay(String? v) =>
       v == null ? null : DateTime.tryParse(v);
@@ -121,13 +122,15 @@ class _HabitDialogState extends State<HabitDialog> {
       if (n == null || n < 1 || n > 3650) {
         error = l.validationGoalDays;
       } else {
-        // Al editar se conserva el inicio original para no perder el avance.
+        // Al editar se conserva el inicio original para no perder el avance. Sin
+        // inicio (meta nueva, o "contar desde mi racha") el servidor la hace empezar
+        // donde empieza la racha actual, para que los días ya cumplidos cuenten.
         final keepStart = widget.initial?.goalEnd == null
             ? widget.initial?.goalStart
             : null;
         goal = GoalForm(
           days: n,
-          start: keepStart ?? formatDay(DateTime.now()),
+          start: _restartFromStreak ? null : keepStart,
           onFail: _onFail,
         );
       }
@@ -256,6 +259,17 @@ class _HabitDialogState extends State<HabitDialog> {
                 labelText: l.goalDaysLabel,
                 counterText: '',
               ),
+            ),
+          if (!_byDates &&
+              widget.initial?.goalDays != null &&
+              widget.initial?.goalEnd == null)
+            CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              dense: true,
+              value: _restartFromStreak,
+              onChanged: (v) => setState(() => _restartFromStreak = v ?? false),
+              title: Text(l.goalRestartFromStreak),
             ),
           const SizedBox(height: 12),
           Text(l.goalOnFail, style: Theme.of(context).textTheme.labelMedium),

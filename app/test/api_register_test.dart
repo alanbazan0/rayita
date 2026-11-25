@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:calendar_check/core/api.dart';
+import 'package:calendar_check/core/models.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -142,6 +143,25 @@ void main() {
 
       await api.googleLogin('tok', inviteCode: '   ');
       expect((adapter.last!.data as Map).containsKey('invite_code'), isFalse);
+    },
+  );
+
+  test(
+    'createHabit manda el día local y no fija el inicio de una meta nueva',
+    () async {
+      adapter.response = {
+        'data': {'id': 1, 'name': 'No fumar'},
+      };
+      await api.createHabit(
+        'No fumar',
+        color: '#EF4444',
+        goal: const GoalForm(days: 10),
+      );
+      final body = adapter.last!.data as Map;
+      expect(adapter.last!.path, '/habits');
+      expect(body['goal_days'], 10);
+      expect(body['goal_start'], isNull);
+      expect(body['today'], matches(RegExp(r'^\d{4}-\d{2}-\d{2}$')));
     },
   );
 }

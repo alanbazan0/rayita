@@ -202,6 +202,8 @@ class Api {
         'color': color,
         'icon': icon,
         'active_days': _activeDaysData(activeDays),
+        // Día local: el servidor lo usa para decidir dónde empieza una meta nueva.
+        'today': formatDay(DateTime.now()),
         ..._goalData(goal),
       },
     );
@@ -224,6 +226,8 @@ class Api {
         'color': color,
         'icon': icon,
         'active_days': _activeDaysData(activeDays),
+        // Día local: el servidor lo usa para decidir dónde empieza una meta nueva.
+        'today': formatDay(DateTime.now()),
         ..._goalData(goal),
       },
     );

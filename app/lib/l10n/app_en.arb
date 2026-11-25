@@ -119,5 +119,6 @@
   "orDivider": "or",
   "googleInviteBody": "To create your account with Google you need an invitation code.",
   "continueLabel": "Continue",
-  "googleFailed": "Couldn't sign in with Google."
+  "googleFailed": "Couldn't sign in with Google.",
+  "goalRestartFromStreak": "Count from the start of my current streak"
 }

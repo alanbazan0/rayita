@@ -438,4 +438,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get googleFailed => 'No se pudo iniciar sesión con Google.';
+
+  @override
+  String get goalRestartFromStreak =>
+      'Contar desde el inicio de mi racha actual';
 }

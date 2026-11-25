@@ -775,6 +775,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo iniciar sesión con Google.'**
   String get googleFailed;
+
+  /// No description provided for @goalRestartFromStreak.
+  ///
+  /// In es, this message translates to:
+  /// **'Contar desde el inicio de mi racha actual'**
+  String get goalRestartFromStreak;
 }
 
 class _AppLocalizationsDelegate

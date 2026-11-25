@@ -240,5 +240,6 @@
   "orDivider": "o",
   "googleInviteBody": "Para crear tu cuenta con Google necesitas un código de invitación.",
   "continueLabel": "Continuar",
-  "googleFailed": "No se pudo iniciar sesión con Google."
+  "googleFailed": "No se pudo iniciar sesión con Google.",
+  "goalRestartFromStreak": "Contar desde el inicio de mi racha actual"
 }

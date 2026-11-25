@@ -156,7 +156,8 @@ void main() {
       expect(result!.goal!.days, 10);
       expect(result!.goal!.end, isNull);
       expect(result!.goal!.onFail, 'accumulate');
-      expect(result!.goal!.start, isNotNull);
+      // Meta nueva: sin inicio, el servidor la hace empezar en la racha actual.
+      expect(result!.goal!.start, isNull);
     });
 
     testWidgets('días inválidos bloquean el guardado y muestran error', (
@@ -194,6 +195,48 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Elige las fechas de inicio y fin.'), findsOneWidget);
     });
+
+    testWidgets('una meta nueva no ofrece "contar desde mi racha"', (
+      tester,
+    ) async {
+      await _open(tester, (_) {});
+      await tester.ensureVisible(find.byType(Switch));
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Contar desde el inicio de mi racha actual'),
+        findsNothing,
+      );
+    });
+
+    testWidgets(
+      'al editar una meta por días se puede reiniciar desde la racha',
+      (tester) async {
+        HabitFormResult? result;
+        await _open(
+          tester,
+          (r) => result = r,
+          initial: const Habit(
+            id: 1,
+            name: 'No fumar',
+            goalDays: 10,
+            goalStart: '2026-11-24',
+            goalOnFail: 'reset',
+          ),
+        );
+        const label = 'Contar desde el inicio de mi racha actual';
+        await tester.ensureVisible(find.text(label));
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Guardar'));
+        await tester.tap(find.text('Guardar'));
+        await tester.pumpAndSettle();
+
+        // Sin inicio: el servidor vuelve a calcularlo desde la racha actual.
+        expect(result!.goal!.days, 10);
+        expect(result!.goal!.start, isNull);
+      },
+    );
 
     testWidgets(
       'al editar precarga la meta, conserva el inicio y se puede quitar',
