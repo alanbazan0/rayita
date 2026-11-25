@@ -23,6 +23,7 @@
  *   action=diag        pide GET /api/config al kernel y muestra el resultado
  *   action=set-env     POST name=INVITE_CODE|GOOGLE_CLIENT_ID|GOOGLE_IOS_CLIENT_ID&value=...
  *   action=mail-test   ?to=correo@dominio.com envía un correo de prueba con el mailer de producción
+ *   action=stats       cifras agregadas de uso (usuarios, hábitos, marcas); sin datos personales
  */
 
 $token = '__DEPLOY_TOKEN__';
@@ -219,6 +220,40 @@ try {
                 fn ($message) => $message->to($to)->subject('Prueba de correo de Rayita')
             );
             echo "enviado al mailer sin errores a $to (revisa también spam)\n";
+            break;
+
+        case 'stats':
+            artisanKernel($apiDir)->bootstrap();
+            $db = fn (string $table) => \Illuminate\Support\Facades\DB::table($table);
+            $since = fn (int $days) => now()->subDays($days);
+            $activeUsers = fn (int $days) => $db('habit_logs')
+                ->join('habits', 'habits.id', '=', 'habit_logs.habit_id')
+                ->where('habit_logs.created_at', '>=', $since($days))
+                ->distinct()->count('habits.user_id');
+
+            echo "== Usuarios ==\n";
+            echo 'total:                 ' . $db('users')->count() . "\n";
+            echo 'con correo verificado: ' . $db('users')->whereNotNull('email_verified_at')->count() . "\n";
+            echo 'entran con Google:     ' . $db('users')->whereNotNull('google_id')->count() . "\n";
+            echo 'nuevos hoy:            ' . $db('users')->where('created_at', '>=', now()->startOfDay())->count() . "\n";
+            echo 'nuevos últimos 7 días: ' . $db('users')->where('created_at', '>=', $since(7))->count() . "\n";
+            echo 'nuevos últimos 30 días:' . ' ' . $db('users')->where('created_at', '>=', $since(30))->count() . "\n";
+            echo "\n== Actividad (usuarios que marcaron algún día) ==\n";
+            echo 'últimas 24 horas:      ' . $activeUsers(1) . "\n";
+            echo 'últimos 7 días:        ' . $activeUsers(7) . "\n";
+            echo 'últimos 30 días:       ' . $activeUsers(30) . "\n";
+            echo "\n== Contenido ==\n";
+            echo 'hábitos creados:       ' . $db('habits')->count() . "\n";
+            echo 'marcas registradas:    ' . $db('habit_logs')->count() . "\n";
+            echo "\n== Registros por día (últimos 14 días, UTC) ==\n";
+            $perDay = $db('users')->selectRaw('DATE(created_at) as d, COUNT(*) as n')
+                ->where('created_at', '>=', $since(14))->groupBy('d')->orderBy('d')->get();
+            foreach ($perDay as $row) {
+                echo $row->d . '  ' . str_repeat('#', min(40, (int) $row->n)) . ' ' . $row->n . "\n";
+            }
+            if ($perDay->isEmpty()) {
+                echo "(sin registros nuevos)\n";
+            }
             break;
 
         default:
