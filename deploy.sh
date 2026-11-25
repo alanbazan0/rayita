@@ -21,6 +21,7 @@ TOKEN_HEADER="X-Deploy-Token: $MIGRATE_TOKEN"
 : "${APP_URL:?falta APP_URL}"
 : "${MIGRATE_TOKEN:?falta MIGRATE_TOKEN}"
 FTP_PORT="${FTP_PORT:-21}"
+MAIL_FROM_ADDRESS="${MAIL_FROM_ADDRESS:-noreply@alanbazan.com.mx}"
 APP_DIR="${APP_DIR:-rayita_app/}"
 DEPLOY_DIR="${DEPLOY_DIR:-rayita_deploy/}"
 
@@ -75,12 +76,17 @@ deploy_api() {
     echo "SESSION_DRIVER=file"
     echo "CACHE_STORE=file"
     echo "QUEUE_CONNECTION=sync"
-    echo "MAIL_MAILER=smtp"
-    echo "MAIL_SCHEME=$scheme"
-    printf "MAIL_HOST='%s'\n" "$MAIL_HOST"
-    echo "MAIL_PORT=$MAIL_PORT"
-    printf "MAIL_USERNAME='%s'\n" "$MAIL_USERNAME"
-    printf "MAIL_PASSWORD='%s'\n" "$MAIL_PASSWORD"
+    if [ -n "$MAIL_HOST" ]; then
+      echo "MAIL_MAILER=smtp"
+      echo "MAIL_SCHEME=$scheme"
+      printf "MAIL_HOST='%s'\n" "$MAIL_HOST"
+      echo "MAIL_PORT=$MAIL_PORT"
+      printf "MAIL_USERNAME='%s'\n" "$MAIL_USERNAME"
+      printf "MAIL_PASSWORD='%s'\n" "$MAIL_PASSWORD"
+    else
+      # Sin SMTP configurado: se envía con el sendmail del propio servidor.
+      echo "MAIL_MAILER=sendmail"
+    fi
     printf "MAIL_FROM_ADDRESS='%s'\n" "$MAIL_FROM_ADDRESS"
     echo 'MAIL_FROM_NAME="Rayita"'
     printf "INVITE_CODE='%s'\n" "$INVITE_CODE"

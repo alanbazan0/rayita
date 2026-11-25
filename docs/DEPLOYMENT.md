@@ -29,11 +29,19 @@ puerto FTP (21) no lo son y están escritos en los workflows (`env:` al inicio d
 | `DEPLOY_TOKEN` | Cadena aleatoria larga (`openssl rand -hex 32`); protege `deploy.php` |
 | `APP_KEY` | `cd backend && php artisan key:generate --show` |
 | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Base MySQL creada en cPanel (HostGator antepone el usuario de cPanel) |
-| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` | Cuenta de correo del hosting (puerto 465 = TLS) |
+| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` | **Opcionales.** Solo si usas SMTP. Sin `MAIL_HOST`, el correo sale por el `sendmail` del servidor |
 | `INVITE_CODE` | Código para registrarse; vacío o ausente = registro abierto |
 
 Se pueden crear a mano en *Settings → Secrets and variables → Actions*, o cargar todos de una
 vez desde `.env.deploy` con `deploy/set-github-secrets.sh`.
+
+## Correo de los códigos de verificación
+
+Por defecto se envía con el `sendmail` del servidor desde `noreply@alanbazan.com.mx`
+(`MAIL_FROM_ADDRESS`, en el `env:` de `deploy-api.yml`). No necesita contraseña. Para que los
+mensajes no caigan en spam, en cPanel → **Email Deliverability** deja el dominio con SPF y DKIM
+válidos. Si luego creas una cuenta propia, carga los secretos `MAIL_HOST`, `MAIL_PORT`,
+`MAIL_USERNAME` y `MAIL_PASSWORD` y el despliegue cambia solo a SMTP.
 
 ## Primer despliegue
 
