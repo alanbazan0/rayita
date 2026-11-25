@@ -110,6 +110,10 @@ cambiarlo: `--dart-define=API_URL=https://tu-dominio/api`.
 **Idiomas.** Los textos están en `app/lib/l10n/app_es.arb` y `app_en.arb`; tras editarlos corre
 `flutter gen-l10n`. Los mensajes de la API están en `backend/lang/es.json` y `en.json`.
 
+## Publicar en Google Play
+
+Guía completa (llave de subida, versión, Play Console, Google Sign-In en la tienda): [docs/RELEASE_ANDROID.md](docs/RELEASE_ANDROID.md).
+
 ## Ofuscación (Android)
 
 El APK/AAB de release se compila con el código Dart **ofuscado** y con **R8** (reduce y renombra el

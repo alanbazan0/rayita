@@ -11,6 +11,13 @@ set -e
 cd "$(dirname "$0")/.."
 
 TARGET="${1:-appbundle}"
+
+# Un .aab para Google Play debe ir firmado con la llave de subida, nunca con la de depuración.
+if [ "$TARGET" = "appbundle" ] && [ ! -f android/key.properties ]; then
+  echo "Falta android/key.properties (la llave de subida): no se genera un .aab firmado con la llave de depuración." >&2
+  echo "Ver docs/RELEASE_ANDROID.md." >&2
+  exit 1
+fi
 API_URL="${API_URL:-https://api.rayita.alanbazan.com.mx/api}"
 VERSION="$(grep '^version:' pubspec.yaml | awk '{print $2}' | tr '+' '_')"
 SYMBOLS="build/symbols/$VERSION"
