@@ -15,9 +15,13 @@ const adBannerUnitId = String.fromEnvironment(
   defaultValue: 'ca-app-pub-3940256099942544/6300978111',
 );
 
+/// Compilación sin anuncios (uso personal): --dart-define=ADS=false. Quita el
+/// banner y también la opción de comprar "quitar anuncios".
+const adsBuild = bool.fromEnvironment('ADS', defaultValue: true);
+
 /// Los anuncios solo existen en Android (la web de pruebas no lleva).
 bool get platformSupportsAds =>
-    !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    adsBuild && !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
 /// Si esta plataforma admite anuncios (y por tanto la compra para quitarlos).
 /// Se sustituye en los tests.

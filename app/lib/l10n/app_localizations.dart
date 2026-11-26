@@ -734,6 +734,36 @@ abstract class AppLocalizations {
   /// **'Vista de lista'**
   String get viewList;
 
+  /// No description provided for @viewWide.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista de tarjetas anchas'**
+  String get viewWide;
+
+  /// No description provided for @viewCompact.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista de tarjetas bajas'**
+  String get viewCompact;
+
+  /// No description provided for @notebookTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuaderno'**
+  String get notebookTitle;
+
+  /// No description provided for @notebookMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todos los meses'**
+  String get notebookMore;
+
+  /// No description provided for @notebookLess.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver menos'**
+  String get notebookLess;
+
   /// No description provided for @inviteCode.
   ///
   /// In es, this message translates to:

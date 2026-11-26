@@ -96,12 +96,17 @@ class _AdaptiveBannerState extends State<_AdaptiveBanner> {
     }
     final ad = _ad;
     if (ad == null || !_loaded) return const SizedBox.shrink();
-    return Container(
-      alignment: Alignment.center,
-      width: double.infinity,
-      height: ad.size.height.toDouble(),
-      color: Colors.white,
-      child: AdWidget(ad: ad),
+    // El botón "+" de la barra inferior sobresale hacia arriba unos 28 dp: el hueco
+    // evita que tape el anuncio (tocar un anuncio por accidente cuenta como clic inválido).
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 32),
+      child: Container(
+        alignment: Alignment.center,
+        width: double.infinity,
+        height: ad.size.height.toDouble(),
+        color: Colors.white,
+        child: AdWidget(ad: ad),
+      ),
     );
   }
 }

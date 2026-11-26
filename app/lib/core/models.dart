@@ -208,6 +208,25 @@ class Tally {
   );
 }
 
+/// Rayitas de un mes (una línea del cuaderno).
+class MonthTally {
+  const MonthTally({
+    required this.month,
+    required this.done,
+    required this.tally,
+  });
+
+  final String month; // AAAA-MM
+  final int done;
+  final Tally tally;
+
+  factory MonthTally.fromJson(Map<String, dynamic> j) => MonthTally(
+    month: j['month'] as String,
+    done: j['done'] as int,
+    tally: Tally.fromJson(j['tally'] as Map<String, dynamic>),
+  );
+}
+
 class HabitStats {
   const HabitStats({
     required this.currentStreak,
@@ -218,6 +237,8 @@ class HabitStats {
     required this.totalDone,
     required this.totalTally,
     this.goal,
+    this.since,
+    this.history = const [],
   });
 
   final int currentStreak;
@@ -228,6 +249,13 @@ class HabitStats {
   final int totalDone;
   final Tally totalTally;
   final GoalProgress? goal;
+
+  /// Primera marca del hábito (puede ser anterior al día en que se creó, porque
+  /// se pueden registrar días atrás); null si aún no hay marcas.
+  final DateTime? since;
+
+  /// Días cumplidos por mes, del más reciente al más antiguo (el cuaderno).
+  final List<MonthTally> history;
 
   factory HabitStats.fromJson(Map<String, dynamic> j) {
     final month = j['month'] as Map<String, dynamic>;
@@ -243,6 +271,21 @@ class HabitStats {
       goal: j['goal'] == null
           ? null
           : GoalProgress.fromJson(j['goal'] as Map<String, dynamic>),
+      since: DateTime.tryParse(j['since'] as String? ?? ''),
+      history: j['history'] is List
+          ? [
+              for (final m in j['history'] as List)
+                MonthTally.fromJson(m as Map<String, dynamic>),
+            ]
+          // Servidor anterior al cuaderno: al menos se ve el mes que sí conoce.
+          : [
+              if (month['month'] is String)
+                MonthTally(
+                  month: month['month'] as String,
+                  done: month['done'] as int,
+                  tally: Tally.fromJson(month['tally'] as Map<String, dynamic>),
+                ),
+            ],
     );
   }
 }

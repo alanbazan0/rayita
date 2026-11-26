@@ -159,10 +159,10 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                     ],
                   ),
                 ),
-                data: (list) => RefreshIndicator(
-                  onRefresh: _onRefresh,
-                  child: list.isEmpty
-                      ? LayoutBuilder(
+                data: (list) => list.isEmpty
+                    ? RefreshIndicator(
+                        onRefresh: _onRefresh,
+                        child: LayoutBuilder(
                           builder: (context, c) => SingleChildScrollView(
                             physics: const AlwaysScrollableScrollPhysics(),
                             child: SizedBox(
@@ -170,58 +170,158 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                               child: _EmptyState(text: l.noHabits),
                             ),
                           ),
-                        )
-                      : ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-                          children: [
-                            FadeSlideIn(child: _TodaySummary(habits: list)),
-                            const SizedBox(height: 22),
-                            _SectionTitle(
-                              title: l.todayLabel,
-                              action: l.newHabit,
-                              onAction: () => _addHabit(context, ref),
-                              view: view,
-                              onView: ref.read(viewModeProvider.notifier).set,
-                            ),
-                            const SizedBox(height: 28),
-                            if (view == HabitsView.list)
-                              for (var i = 0; i < list.length; i++) ...[
-                                FadeSlideIn(
-                                  index: i + 1,
-                                  child: _HabitRow(habit: list[i]),
-                                ),
-                                const SizedBox(height: 12),
-                              ]
-                            else
-                              LayoutBuilder(
-                                builder: (context, c) {
-                                  const gap = 14.0;
-                                  final cols = (c.maxWidth / 190).floor().clamp(
-                                    2,
-                                    5,
-                                  );
-                                  final w =
-                                      (c.maxWidth - gap * (cols - 1)) / cols;
-                                  return Wrap(
-                                    spacing: gap,
-                                    runSpacing: gap + 16,
-                                    children: [
-                                      for (var i = 0; i < list.length; i++)
-                                        FadeSlideIn(
-                                          index: i + 1,
-                                          child: SizedBox(
-                                            width: w,
-                                            child: _HabitCard(habit: list[i]),
-                                          ),
-                                        ),
-                                    ],
-                                  );
-                                },
-                              ),
-                          ],
                         ),
-                ),
+                      )
+                    : Column(
+                        children: [
+                          // Resumen y selector de vista quedan fijos: solo se
+                          // desplaza la lista de hábitos.
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                            child: Column(
+                              children: [
+                                FadeSlideIn(child: _TodaySummary(habits: list)),
+                                const SizedBox(height: 16),
+                                _SectionTitle(
+                                  title: l.todayLabel,
+                                  action: l.newHabit,
+                                  onAction: () => _addHabit(context, ref),
+                                  view: view,
+                                  onView: ref
+                                      .read(viewModeProvider.notifier)
+                                      .set,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: RefreshIndicator(
+                              onRefresh: _onRefresh,
+                              child: ListView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                // El ícono de cada tarjeta sobresale por arriba: el
+                                // margen superior evita que el borde de la lista lo corte.
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  26,
+                                  20,
+                                  96,
+                                ),
+                                children: [
+                                  if (view == HabitsView.list)
+                                    for (var i = 0; i < list.length; i++) ...[
+                                      FadeSlideIn(
+                                        index: i + 1,
+                                        child: _HabitRow(habit: list[i]),
+                                      ),
+                                      const SizedBox(height: 12),
+                                    ]
+                                  else if (view == HabitsView.wide)
+                                    LayoutBuilder(
+                                      builder: (context, c) {
+                                        const gap = 14.0;
+                                        // Una por fila en el teléfono; más ancho, 2 o 3 columnas.
+                                        final cols = (c.maxWidth / 420)
+                                            .floor()
+                                            .clamp(1, 3);
+                                        final w =
+                                            (c.maxWidth - gap * (cols - 1)) /
+                                            cols;
+                                        return Wrap(
+                                          spacing: gap,
+                                          runSpacing: gap,
+                                          children: [
+                                            for (
+                                              var i = 0;
+                                              i < list.length;
+                                              i++
+                                            )
+                                              FadeSlideIn(
+                                                index: i + 1,
+                                                child: SizedBox(
+                                                  width: w,
+                                                  child: _HabitWideCard(
+                                                    habit: list[i],
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        );
+                                      },
+                                    )
+                                  else
+                                    LayoutBuilder(
+                                      builder: (context, c) {
+                                        const gap = 14.0;
+                                        final dense =
+                                            view == HabitsView.compact;
+                                        final cols =
+                                            (c.maxWidth / (dense ? 170 : 190))
+                                                .floor()
+                                                .clamp(2, 6);
+                                        // Por filas: cada fila iguala la altura de sus
+                                        // tarjetas (un nombre de 2 líneas no deja una más alta).
+                                        return Column(
+                                          children: [
+                                            for (
+                                              var start = 0;
+                                              start < list.length;
+                                              start += cols
+                                            ) ...[
+                                              IntrinsicHeight(
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .stretch,
+                                                  children: [
+                                                    for (
+                                                      var j = 0;
+                                                      j < cols;
+                                                      j++
+                                                    ) ...[
+                                                      if (j > 0)
+                                                        const SizedBox(
+                                                          width: gap,
+                                                        ),
+                                                      Expanded(
+                                                        child:
+                                                            start + j <
+                                                                list.length
+                                                            ? FadeSlideIn(
+                                                                index:
+                                                                    start +
+                                                                    j +
+                                                                    1,
+                                                                child: _HabitCard(
+                                                                  habit:
+                                                                      list[start +
+                                                                          j],
+                                                                  dense: dense,
+                                                                ),
+                                                              )
+                                                            : const SizedBox.shrink(),
+                                                      ),
+                                                    ],
+                                                  ],
+                                                ),
+                                              ),
+                                              if (start + cols < list.length)
+                                                SizedBox(
+                                                  height: dense
+                                                      ? gap + 10
+                                                      : gap + 16,
+                                                ),
+                                            ],
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
             // Un solo banner discreto, sobre la barra inferior y fuera de la lista.
@@ -385,7 +485,7 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-/// Dos botones (tarjetas / lista); el activo va relleno.
+/// Un botón por vista (tarjetas, anchas, bajas y lista); el activo va relleno.
 class _ViewToggle extends StatelessWidget {
   const _ViewToggle({required this.view, required this.onChanged});
 
@@ -407,7 +507,7 @@ class _ViewToggle extends StatelessWidget {
             onTap: () => onChanged(v),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              width: 36,
+              width: 34,
               height: 32,
               decoration: BoxDecoration(
                 color: selected ? AppColors.primary : Colors.transparent,
@@ -435,6 +535,8 @@ class _ViewToggle extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           button(HabitsView.cards, Icons.grid_view_rounded, l.viewCards),
+          button(HabitsView.wide, Icons.view_agenda_rounded, l.viewWide),
+          button(HabitsView.compact, Icons.view_module_rounded, l.viewCompact),
           button(HabitsView.list, Icons.view_list_rounded, l.viewList),
         ],
       ),
@@ -442,7 +544,8 @@ class _ViewToggle extends StatelessWidget {
   }
 }
 
-/// Resumen del día: tarjeta blanca con cifras a la izquierda y anillo de progreso.
+/// Resumen del día en una franja: cumplidos, mejor racha y anillo de progreso.
+/// Es compacto a propósito: deja lugar a los hábitos, que son lo importante.
 class _TodaySummary extends ConsumerWidget {
   const _TodaySummary({required this.habits});
 
@@ -451,7 +554,6 @@ class _TodaySummary extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
-    final today = formatDay(now);
     final month = formatMonth(now);
 
     var done = 0;
@@ -459,11 +561,7 @@ class _TodaySummary extends ConsumerWidget {
     // Solo cuentan los hábitos que aplican hoy.
     final due = habits.where((h) => h.isActiveOn(now)).toList();
     for (final h in due) {
-      final logs = ref.watch(logsProvider((habitId: h.id, month: month))).value;
-      if (logs?.any((x) => x.date == today && x.status == LogStatus.done) ??
-          false) {
-        done++;
-      }
+      if (ref.watch(doneTodayProvider(h.id))) done++;
     }
     for (final h in habits) {
       final s = ref.watch(statsProvider((habitId: h.id, month: month))).value;
@@ -473,112 +571,100 @@ class _TodaySummary extends ConsumerWidget {
     final l = context.l10n;
 
     Widget stat(Color accent, String label, String value, String unit) => Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 3,
-          height: 44,
+          height: 36,
           decoration: BoxDecoration(
             color: accent,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-        const SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.muted,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text.rich(
-              TextSpan(
-                text: value,
+        const SizedBox(width: 8),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
+                  color: AppColors.muted,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
                 ),
-                children: [
-                  TextSpan(
-                    text: ' $unit',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.muted,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
               ),
-            ),
-          ],
+              Text.rich(
+                TextSpan(
+                  text: value,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: ' $unit',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.muted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      padding: const EdgeInsets.fromLTRB(16, 12, 14, 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(22),
-          topRight: Radius.circular(60),
-          bottomLeft: Radius.circular(22),
-          bottomRight: Radius.circular(22),
+          topLeft: Radius.circular(18),
+          topRight: Radius.circular(44),
+          bottomLeft: Radius.circular(18),
+          bottomRight: Radius.circular(18),
         ),
         boxShadow: softShadow(0.1),
       ),
       child: Row(
         children: [
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                stat(
-                  AppColors.primaryLight,
-                  l.doneToday,
-                  '$done',
-                  '/ ${due.length}',
-                ),
-                const SizedBox(height: 18),
-                stat(const Color(0xFFF5A623), l.bestStreak, '$best', '🔥'),
-              ],
+            child: stat(
+              AppColors.primaryLight,
+              l.doneToday,
+              '$done',
+              '/ ${due.length}',
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
+          Expanded(
+            child: stat(const Color(0xFFF5A623), l.bestStreak, '$best', '🔥'),
+          ),
+          const SizedBox(width: 10),
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: ratio),
             duration: const Duration(milliseconds: 700),
             curve: Curves.easeOutCubic,
             builder: (_, value, _) => SizedBox(
-              width: 112,
-              height: 112,
+              width: 58,
+              height: 58,
               child: CustomPaint(
-                painter: _RingPainter(value),
+                painter: _RingPainter(value, stroke: 6),
                 child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${(value * 100).round()}%',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        l.todayLabel,
-                        style: const TextStyle(
-                          color: AppColors.muted,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    '${(value * 100).round()}%',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
@@ -592,13 +678,13 @@ class _TodaySummary extends ConsumerWidget {
 
 /// Anillo con degradado índigo, punta redondeada y un circulito blanco al final.
 class _RingPainter extends CustomPainter {
-  _RingPainter(this.value);
+  _RingPainter(this.value, {this.stroke = 9.0});
 
   final double value;
+  final double stroke;
 
   @override
   void paint(Canvas canvas, Size size) {
-    const stroke = 9.0;
     const twoPi = 2 * math.pi;
     final center = size.center(Offset.zero);
     final radius = (size.width - stroke) / 2;
@@ -661,7 +747,8 @@ class _RingPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) => old.value != value;
+  bool shouldRepaint(_RingPainter old) =>
+      old.value != value || old.stroke != stroke;
 }
 
 /// Marca o desmarca hoy como cumplido; avisa si la API falla.
@@ -672,79 +759,199 @@ Future<void> toggleHabitToday(
   bool isDone,
 ) async {
   final api = ref.read(apiProvider);
-  final today = formatDay(DateTime.now());
+  final pending = ref.read(pendingTodayProvider.notifier);
+  // Un toque a medias aún no termina: se ignora el siguiente para no cruzar peticiones.
+  if (ref.read(pendingTodayProvider).containsKey(habit.id)) return;
+  final now = DateTime.now();
+  final today = formatDay(now);
+  // El check cambia al instante; si el servidor falla, vuelve a como estaba.
+  pending.set(habit.id, !isDone);
   try {
     if (isDone) {
       await api.clearLog(habit.id, today);
     } else {
       await api.setLog(habit.id, today, LogStatus.done);
     }
-    ref.invalidate(logsProvider);
-    ref.invalidate(statsProvider);
+    await refreshHabitMarks(ref, habit.id, day: now);
   } catch (e) {
     if (context.mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(errorMessage(e, context.l10n))));
     }
+  } finally {
+    pending.clear(habit.id);
   }
 }
 
-/// Tarjeta de hábito con degradado de su color y una esquina grande redondeada.
-class _HabitCard extends ConsumerWidget {
-  const _HabitCard({required this.habit});
+const _cardRadius = BorderRadius.only(
+  topLeft: Radius.circular(14),
+  topRight: Radius.circular(56),
+  bottomLeft: Radius.circular(14),
+  bottomRight: Radius.circular(14),
+);
+
+BoxDecoration _cardDecoration(Color color) => BoxDecoration(
+  gradient: LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color.lerp(color, Colors.white, 0.28)!, color],
+  ),
+  borderRadius: _cardRadius,
+  boxShadow: [
+    BoxShadow(
+      color: color.withValues(alpha: 0.35),
+      blurRadius: 20,
+      offset: const Offset(0, 10),
+    ),
+  ],
+);
+
+void _openDetail(BuildContext context, Habit habit) {
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(builder: (_) => HabitDetailScreen(habit: habit)),
+  );
+}
+
+/// Círculo blanco con el ícono del hábito (o su inicial).
+class _HabitBadge extends StatelessWidget {
+  const _HabitBadge({required this.habit, this.size = 56});
 
   final Habit habit;
+  final double size;
 
-  Future<void> _toggleToday(BuildContext context, WidgetRef ref, bool isDone) =>
-      toggleHabitToday(context, ref, habit, isDone);
+  @override
+  Widget build(BuildContext context) {
+    final color = habit.displayColor;
+    final icon = habitIconFor(habit.icon);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.45),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Center(
+        child: icon != null
+            ? Icon(icon, color: color, size: size * 0.54)
+            : Text(
+                habit.name.trim().isEmpty
+                    ? '•'
+                    : habit.name.trim().characters.first.toUpperCase(),
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w800,
+                  fontSize: size * 0.43,
+                ),
+              ),
+      ),
+    );
+  }
+}
+
+/// Círculo de "hoy": se rellena al marcar el día y avisa si hoy no toca.
+class _CheckButton extends ConsumerWidget {
+  const _CheckButton({required this.habit, this.size = 46});
+
+  final Habit habit;
+  final double size;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final now = DateTime.now();
-    final key = (habitId: habit.id, month: formatMonth(now));
-    final stats = ref.watch(statsProvider(key));
-    final logs = ref.watch(logsProvider(key));
-    final color = habit.displayColor;
     final l = context.l10n;
-    final today = formatDay(now);
-    final activeToday = habit.isActiveOn(now);
-    final isDone =
-        logs.value?.any((x) => x.date == today && x.status == LogStatus.done) ??
-        false;
-    final streak = stats.value?.currentStreak ?? 0;
-
-    const radius = BorderRadius.only(
-      topLeft: Radius.circular(14),
-      topRight: Radius.circular(56),
-      bottomLeft: Radius.circular(14),
-      bottomRight: Radius.circular(14),
-    );
-
+    final color = habit.displayColor;
+    final activeToday = habit.isActiveOn(DateTime.now());
+    final isDone = ref.watch(doneTodayProvider(habit.id));
     final tooltip = !activeToday
         ? l.notToday
         : isDone
         ? l.unmarkToday
         : l.markToday;
 
-    final card = Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color.lerp(color, Colors.white, 0.28)!, color],
-        ),
-        borderRadius: radius,
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.35),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+    return Semantics(
+      button: true,
+      label: tooltip,
+      child: Tooltip(
+        message: tooltip,
+        child: GestureDetector(
+          onTap: !activeToday
+              ? () => ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text(l.inactiveDayHint)))
+              : () => toggleHabitToday(context, ref, habit, isDone),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isDone
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: activeToday ? 0.22 : 0.1),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: activeToday ? 1 : 0.4),
+                width: 2.5,
+              ),
+              boxShadow: isDone ? softShadow(0.25) : null,
+            ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: isDone
+                  ? Icon(
+                      Icons.check,
+                      key: const ValueKey('on'),
+                      color: color,
+                      size: size * 0.56,
+                    )
+                  : !activeToday
+                  ? Icon(
+                      Icons.remove,
+                      key: const ValueKey('rest'),
+                      color: Colors.white.withValues(alpha: 0.6),
+                    )
+                  : const SizedBox.shrink(key: ValueKey('off')),
+            ),
           ),
-        ],
+        ),
       ),
+    );
+  }
+}
+
+/// Tarjeta de hábito con degradado de su color y una esquina grande redondeada.
+/// Con [dense] es más baja (vista de tarjetas bajas) y mantiene los palitos.
+class _HabitCard extends ConsumerWidget {
+  const _HabitCard({required this.habit, this.dense = false});
+
+  final Habit habit;
+  final bool dense;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = DateTime.now();
+    final key = (habitId: habit.id, month: formatMonth(now));
+    final stats = ref.watch(statsProvider(key));
+    final color = habit.displayColor;
+    final l = context.l10n;
+    final streak = stats.value?.currentStreak ?? 0;
+
+    final badge = dense ? 46.0 : 56.0;
+    final pad = dense ? 12.0 : 16.0;
+    // Misma altura para todas las tarjetas de una cuadrícula, con o sin meta:
+    // si no, las filas quedan dispares.
+    final progressH = dense ? 60.0 : 80.0;
+
+    final card = Container(
+      decoration: _cardDecoration(color),
       child: Material(
         color: Colors.transparent,
-        borderRadius: radius,
+        borderRadius: _cardRadius,
         clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
@@ -764,37 +971,39 @@ class _HabitCard extends ConsumerWidget {
               ),
             ),
             InkWell(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => HabitDetailScreen(habit: habit),
-                ),
-              ),
+              onTap: () => _openDetail(context, habit),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                padding: EdgeInsets.all(pad),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 46), // hueco del ícono que sobresale
+                    // Hueco del ícono que sobresale.
+                    SizedBox(height: dense ? 34 : 46),
                     Text(
                       habit.name,
-                      maxLines: 2,
+                      maxLines: dense ? 1 : 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
-                        fontSize: 17,
+                        fontSize: dense ? 15 : 17,
                         height: 1.15,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: dense ? 6 : 8),
                     SizedBox(
-                      height: 80,
+                      height: progressH,
                       child: stats.maybeWhen(
-                        data: (s) => _CardProgress(stats: s),
+                        data: (s) => _CardProgress(
+                          stats: s,
+                          tallyHeight: dense ? 16 : 22,
+                        ),
                         orElse: () => const SizedBox.shrink(),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    // El sobrante de una tarjeta más baja que su vecina va aquí.
+                    const Spacer(),
+                    SizedBox(height: dense ? 6 : 8),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -804,10 +1013,10 @@ class _HabitCard extends ConsumerWidget {
                             children: [
                               Text(
                                 '$streak',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 34,
+                                  fontSize: dense ? 26 : 34,
                                   height: 1,
                                 ),
                               ),
@@ -818,71 +1027,13 @@ class _HabitCard extends ConsumerWidget {
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.85),
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 12,
+                                  fontSize: dense ? 11 : 12,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        Semantics(
-                          button: true,
-                          label: tooltip,
-                          child: Tooltip(
-                            message: tooltip,
-                            child: GestureDetector(
-                              onTap: !activeToday
-                                  ? () => ScaffoldMessenger.of(context)
-                                        .showSnackBar(
-                                          SnackBar(
-                                            content: Text(l.inactiveDayHint),
-                                          ),
-                                        )
-                                  : () => _toggleToday(context, ref, isDone),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 220),
-                                curve: Curves.easeOut,
-                                width: 46,
-                                height: 46,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isDone
-                                      ? Colors.white
-                                      : Colors.white.withValues(
-                                          alpha: activeToday ? 0.22 : 0.1,
-                                        ),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(
-                                      alpha: activeToday ? 1 : 0.4,
-                                    ),
-                                    width: 2.5,
-                                  ),
-                                  boxShadow: isDone ? softShadow(0.25) : null,
-                                ),
-                                child: AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 200),
-                                  child: isDone
-                                      ? Icon(
-                                          Icons.check,
-                                          key: const ValueKey('on'),
-                                          color: color,
-                                          size: 26,
-                                        )
-                                      : !activeToday
-                                      ? Icon(
-                                          Icons.remove,
-                                          key: const ValueKey('rest'),
-                                          color: Colors.white.withValues(
-                                            alpha: 0.6,
-                                          ),
-                                        )
-                                      : const SizedBox.shrink(
-                                          key: ValueKey('off'),
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                        _CheckButton(habit: habit, size: dense ? 38 : 46),
                       ],
                     ),
                   ],
@@ -897,41 +1048,14 @@ class _HabitCard extends ConsumerWidget {
     // El ícono sobresale un poco por arriba de la tarjeta (como en la referencia).
     return Stack(
       clipBehavior: Clip.none,
+      fit: StackFit.passthrough,
       children: [
         card,
         Positioned(
-          top: -16,
+          top: -badge * 0.29,
           left: 14,
           child: IgnorePointer(
-            child: Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.45),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: habitIconFor(habit.icon) != null
-                    ? Icon(habitIconFor(habit.icon), color: color, size: 30)
-                    : Text(
-                        habit.name.trim().isEmpty
-                            ? '•'
-                            : habit.name.trim().characters.first.toUpperCase(),
-                        style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 24,
-                        ),
-                      ),
-              ),
-            ),
+            child: _HabitBadge(habit: habit, size: badge),
           ),
         ),
       ],
@@ -939,11 +1063,136 @@ class _HabitCard extends ConsumerWidget {
   }
 }
 
+/// Tarjeta ancha (una por fila): los palitos van a todo lo ancho y más grandes.
+class _HabitWideCard extends ConsumerWidget {
+  const _HabitWideCard({required this.habit});
+
+  final Habit habit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = DateTime.now();
+    final key = (habitId: habit.id, month: formatMonth(now));
+    final stats = ref.watch(statsProvider(key)).value;
+    final color = habit.displayColor;
+    final l = context.l10n;
+    final streak = stats?.currentStreak ?? 0;
+    final goal = stats?.goal;
+
+    return Container(
+      decoration: _cardDecoration(color),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: _cardRadius,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _openDetail(context, habit),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _HabitBadge(habit: habit, size: 44),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        habit.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Con letra grande o pantalla angosta la etiqueta se recorta, no desborda.
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 84),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '$streak',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 28,
+                              height: 1,
+                            ),
+                          ),
+                          Text(
+                            l.streakLabel(streak),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _CheckButton(habit: habit, size: 44),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (stats != null)
+                  TallyMarks(
+                    tally: stats.monthTally,
+                    color: Colors.white,
+                    emptyColor: Colors.white.withValues(alpha: 0.85),
+                    height: 28,
+                  ),
+                if (goal != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    goal.achieved
+                        ? l.goalAchieved
+                        : goal.failed
+                        ? l.goalFailed
+                        : l.goalProgress(goal.progress, goal.target),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: goal.fraction,
+                      minHeight: 7,
+                      backgroundColor: Colors.white.withValues(alpha: 0.28),
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Zona media de la tarjeta: marcas de conteo y, si hay meta, su barra de avance.
 class _CardProgress extends StatelessWidget {
-  const _CardProgress({required this.stats});
+  const _CardProgress({required this.stats, this.tallyHeight = 22});
 
   final HabitStats stats;
+
+  /// Alto de los palitos: son lo principal de la tarjeta, no se achican de más.
+  final double tallyHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -961,7 +1210,7 @@ class _CardProgress extends StatelessWidget {
             tally: stats.monthTally,
             color: Colors.white,
             emptyColor: Colors.white.withValues(alpha: 0.85),
-            height: 22,
+            height: tallyHeight,
           ),
           if (goal != null) ...[
             const SizedBox(height: 8),
@@ -1007,14 +1256,10 @@ class _HabitRow extends ConsumerWidget {
     final now = DateTime.now();
     final key = (habitId: habit.id, month: formatMonth(now));
     final stats = ref.watch(statsProvider(key)).value;
-    final logs = ref.watch(logsProvider(key));
     final color = habit.displayColor;
     final l = context.l10n;
-    final today = formatDay(now);
     final activeToday = habit.isActiveOn(now);
-    final isDone =
-        logs.value?.any((x) => x.date == today && x.status == LogStatus.done) ??
-        false;
+    final isDone = ref.watch(doneTodayProvider(habit.id));
     final goal = stats?.goal;
     final tooltip = !activeToday
         ? l.notToday

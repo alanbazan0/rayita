@@ -58,11 +58,6 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
     }
   }
 
-  bool get _isCurrentMonth {
-    final now = DateTime.now();
-    return _month.year == now.year && _month.month == now.month;
-  }
-
   void _shift(int delta) =>
       setState(() => _month = DateTime(_month.year, _month.month + delta));
 
@@ -80,8 +75,7 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
       }
       try {
         await api.clearLog(widget.habit.id, date);
-        ref.invalidate(logsProvider);
-        ref.invalidate(statsProvider);
+        await refreshHabitMarks(ref, widget.habit.id, day: day);
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -100,8 +94,7 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
         case LogStatus.partial:
           await api.clearLog(widget.habit.id, date);
       }
-      ref.invalidate(logsProvider);
-      ref.invalidate(statsProvider);
+      await refreshHabitMarks(ref, widget.habit.id, day: day);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -151,6 +144,17 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
     final l = context.l10n;
     final logs = ref.watch(logsProvider(_key));
     final stats = ref.watch(statsProvider(_key));
+    // El cuaderno y la fecha de inicio salen de las estadísticas del mes en curso,
+    // que no cambian al navegar el calendario (así no parpadean).
+    final overview = ref
+        .watch(
+          statsProvider((
+            habitId: habit.id,
+            month: formatMonth(DateTime.now()),
+          )),
+        )
+        .value;
+    final started = habitStartDate(habit.createdAt, overview?.since);
     final title = toBeginningOfSentenceCase(
       DateFormat.yMMMM(Localizations.localeOf(context).toString())
           .format(_month),
@@ -230,13 +234,11 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
-                              if (habit.createdAt != null)
+                              if (started != null)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 2),
                                   child: Text(
-                                    l.habitSince(
-                                      _fmtDate(context, habit.createdAt!),
-                                    ),
+                                    l.habitSince(_fmtDate(context, started)),
                                     style: TextStyle(
                                       color: Colors.white.withValues(
                                         alpha: 0.85,
@@ -275,8 +277,22 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
               ),
             ),
             const SizedBox(height: 18),
+            if (overview != null) ...[
+              FadeSlideIn(
+                index: 1,
+                child: _Notebook(
+                  history: overview.history,
+                  total: overview.totalDone,
+                  color: color,
+                  now: DateTime.now(),
+                  selected: _month,
+                  onSelect: (m) => setState(() => _month = m),
+                ),
+              ),
+              const SizedBox(height: 18),
+            ],
             FadeSlideIn(
-              index: 1,
+              index: 2,
               child: AppCard(
                 child: Column(
                   children: [
@@ -368,7 +384,7 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
                 children: [
                   if (s.goal != null) ...[
                     FadeSlideIn(
-                      index: 2,
+                      index: 3,
                       child: AppCard(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,29 +424,6 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
                     ),
                     const SizedBox(height: 14),
                   ],
-                  FadeSlideIn(
-                    index: 2,
-                    child: _TallyCard(
-                      // En meses pasados se muestra el nombre del mes en vez de "Este mes".
-                      title: _isCurrentMonth ? l.thisMonth : title,
-                      big: '${s.monthDone}',
-                      detail: s.monthPartial > 0
-                          ? l.partialCount(s.monthPartial)
-                          : null,
-                      tally: s.monthTally,
-                      color: color,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  FadeSlideIn(
-                    index: 3,
-                    child: _TallyCard(
-                      title: l.total,
-                      big: '${s.totalDone}',
-                      tally: s.totalTally,
-                      color: color,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -532,68 +525,215 @@ String _fmtDay(BuildContext context, String day) {
   return d == null ? day : _fmtDate(context, d);
 }
 
-class _TallyCard extends StatelessWidget {
-  const _TallyCard({
-    required this.title,
-    required this.big,
-    required this.tally,
+/// "Cuaderno de rayitas": una línea por mes con sus palitos, como en una libreta.
+/// Tocar un mes lo abre en el calendario. Es lo primero que se ve del hábito
+/// porque las rayitas son lo principal de la app.
+class _Notebook extends StatefulWidget {
+  const _Notebook({
+    required this.history,
+    required this.total,
     required this.color,
-    this.detail,
+    required this.now,
+    required this.selected,
+    required this.onSelect,
   });
 
-  final String title;
-  final String big;
-  final String? detail;
-  final Tally tally;
+  final List<MonthTally> history;
+  final int total;
   final Color color;
+  final DateTime now;
+
+  /// Mes que muestra el calendario (se resalta su línea).
+  final DateTime selected;
+  final ValueChanged<DateTime> onSelect;
+
+  static const paper = Color(0xFFFBF4E4);
+  static const ruling = Color(0xFFE9DDC2);
+  static const ink = Color(0xFF8A7A58);
+
+  /// Cuántos meses se ven antes de pedir "ver todos".
+  static const collapsed = 4;
+
+  @override
+  State<_Notebook> createState() => _NotebookState();
+}
+
+class _NotebookState extends State<_Notebook> {
+  bool _expanded = false;
+
+  /// Meses del historial; el actual siempre está, aunque aún no tenga marcas.
+  List<MonthTally> get _months {
+    final nowKey = formatMonth(widget.now);
+    final list = [...widget.history];
+    if (!list.any((m) => m.month == nowKey)) {
+      list.insert(
+        0,
+        MonthTally(
+          month: nowKey,
+          done: 0,
+          tally: const Tally(total: 0, groups: 0, remainder: 0),
+        ),
+      );
+    }
+    list.sort((a, b) => b.month.compareTo(a.month));
+    return list;
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return AppCard(
-      padding: const EdgeInsets.all(20),
-      child: SizedBox(
-        width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title.toUpperCase(),
-              style: const TextStyle(
-                color: AppColors.muted,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.1,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(
-                  big,
-                  style: TextStyle(
-                    color: color,
+    final locale = Localizations.localeOf(context).toString();
+    final nowKey = formatMonth(widget.now);
+    final selectedKey = formatMonth(widget.selected);
+    final all = _months;
+    final canExpand = all.length > _Notebook.collapsed;
+    final shown = _expanded || !canExpand
+        ? all
+        : all.take(_Notebook.collapsed).toList();
+
+    String label(String key) {
+      final d = DateTime.parse('$key-01');
+      final month = toBeginningOfSentenceCase(DateFormat.MMM(locale).format(d));
+      return d.year == widget.now.year ? month : "$month '${d.year % 100}";
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      decoration: BoxDecoration(
+        color: _Notebook.paper,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(22),
+          topRight: Radius.circular(22),
+          bottomLeft: Radius.circular(22),
+          bottomRight: Radius.circular(22),
+        ),
+        boxShadow: softShadow(0.08),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l.notebookTitle.toUpperCase(),
+                  style: const TextStyle(
+                    color: _Notebook.ink,
                     fontWeight: FontWeight.w800,
-                    fontSize: 36,
+                    letterSpacing: 1.1,
+                    fontSize: 12,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  [l.doneWord(int.tryParse(big) ?? 0), ?detail].join(' · '),
+              ),
+              Text(
+                '${l.total} ',
+                style: const TextStyle(
+                  color: _Notebook.ink,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+              Text(
+                '${widget.total}',
+                style: TextStyle(
+                  color: widget.color,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22,
+                  height: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          for (final m in shown)
+            InkWell(
+              onTap: () => widget.onSelect(DateTime.parse('${m.month}-01')),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  border: const Border(
+                    bottom: BorderSide(color: _Notebook.ruling),
+                  ),
+                  color: m.month == selectedKey
+                      ? widget.color.withValues(alpha: 0.07)
+                      : null,
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 56,
+                      child: Text(
+                        label(m.month),
+                        style: TextStyle(
+                          color: m.month == selectedKey
+                              ? widget.color
+                              : _Notebook.ink,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TallyMarks(
+                          tally: m.tally,
+                          // El mes en curso se dibuja más grande y a todo color.
+                          height: m.month == nowKey ? 34 : 24,
+                          color: m.month == nowKey
+                              ? widget.color
+                              : widget.color.withValues(alpha: 0.7),
+                          emptyColor: _Notebook.ink,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 30,
+                      child: Text(
+                        '${m.done}',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: m.month == nowKey
+                              ? widget.color
+                              : _Notebook.ink,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (canExpand)
+            Align(
+              alignment: Alignment.center,
+              child: TextButton(
+                onPressed: () => setState(() => _expanded = !_expanded),
+                child: Text(
+                  _expanded ? l.notebookLess : l.notebookMore,
                   style: const TextStyle(
-                    color: AppColors.muted,
+                    color: _Notebook.ink,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            TallyMarks(tally: tally, color: color, height: 32),
-          ],
-        ),
+              ),
+            )
+          else
+            const SizedBox(height: 6),
+        ],
       ),
     );
   }
+}
+
+/// Inicio del hábito: la primera marca si es anterior a su creación (se pueden
+/// registrar días atrás) y, si no, el día en que se creó.
+DateTime? habitStartDate(DateTime? created, DateTime? since) {
+  if (created == null) return since;
+  if (since == null) return created;
+  final c = DateTime(created.year, created.month, created.day);
+  final s = DateTime(since.year, since.month, since.day);
+  return s.isBefore(c) ? s : created;
 }

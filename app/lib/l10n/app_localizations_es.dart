@@ -418,6 +418,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get viewList => 'Vista de lista';
 
   @override
+  String get viewWide => 'Vista de tarjetas anchas';
+
+  @override
+  String get viewCompact => 'Vista de tarjetas bajas';
+
+  @override
+  String get notebookTitle => 'Cuaderno';
+
+  @override
+  String get notebookMore => 'Ver todos los meses';
+
+  @override
+  String get notebookLess => 'Ver menos';
+
+  @override
   String get inviteCode => 'Código de invitación';
 
   @override

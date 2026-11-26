@@ -3,6 +3,7 @@
 #
 # Uso:  tool/build_release.sh [apk|appbundle]      (por defecto: appbundle, el que pide Google Play)
 #       API_URL=https://...  tool/build_release.sh apk
+#       ADS=false tool/build_release.sh apk      (APK personal sin anuncios ni opción de compra)
 #
 # Guarda los símbolos en build/symbols/<versión>/: sin ellos no se pueden leer los
 # fallos de una versión ofuscada. Conserva esa carpeta (y el mapping.txt de R8) de
@@ -19,13 +20,20 @@ if [ "$TARGET" = "appbundle" ] && [ ! -f android/key.properties ]; then
   exit 1
 fi
 API_URL="${API_URL:-https://api.rayita.alanbazan.com.mx/api}"
+ADS="${ADS:-true}"
+# Un .aab para Google Play siempre lleva anuncios: es la versión pública.
+if [ "$TARGET" = "appbundle" ] && [ "$ADS" != "true" ]; then
+  echo "ADS=false es solo para un APK personal; el .aab de Play debe llevar anuncios." >&2
+  exit 1
+fi
 VERSION="$(grep '^version:' pubspec.yaml | awk '{print $2}' | tr '+' '_')"
 SYMBOLS="build/symbols/$VERSION"
 mkdir -p "$SYMBOLS"
 
 flutter build "$TARGET" --release \
   --obfuscate --split-debug-info="$SYMBOLS" \
-  --dart-define=API_URL="$API_URL"
+  --dart-define=API_URL="$API_URL" \
+  --dart-define=ADS="$ADS"
 
 echo
 echo "Símbolos de Dart:   $SYMBOLS"

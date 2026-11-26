@@ -187,3 +187,53 @@ final logsProvider = FutureProvider.family<List<HabitLog>, HabitMonth>(
 final statsProvider = FutureProvider.family<HabitStats, HabitMonth>(
   (ref, key) => ref.read(apiProvider).stats(key.habitId, key.month),
 );
+
+/// Marcas de "hoy" que ya se muestran mientras el servidor las confirma, para que
+/// el check responda al instante (habitId -> cumplido). Se limpia al terminar.
+class PendingTodayNotifier extends Notifier<Map<int, bool>> {
+  @override
+  Map<int, bool> build() => {};
+
+  void set(int habitId, bool done) => state = {...state, habitId: done};
+
+  void clear(int habitId) => state = {...state}..remove(habitId);
+}
+
+final pendingTodayProvider =
+    NotifierProvider<PendingTodayNotifier, Map<int, bool>>(
+      PendingTodayNotifier.new,
+    );
+
+/// Si hoy está cumplido: lo pendiente manda sobre lo que dijo el servidor.
+final doneTodayProvider = Provider.family<bool, int>((ref, habitId) {
+  final pending = ref.watch(pendingTodayProvider.select((m) => m[habitId]));
+  if (pending != null) return pending;
+  final now = DateTime.now();
+  final logs = ref
+      .watch(logsProvider((habitId: habitId, month: formatMonth(now))))
+      .value;
+  final today = formatDay(now);
+  return logs?.any((x) => x.date == today && x.status == LogStatus.done) ??
+      false;
+});
+
+/// Vuelve a pedir las marcas y estadísticas de UN hábito (no las de todos) y
+/// espera a que lleguen las del mes actual, que son las que muestra la lista.
+/// [day] es el día que se cambió: si es de otro mes, también se invalida ese mes.
+Future<void> refreshHabitMarks(
+  WidgetRef ref,
+  int habitId, {
+  DateTime? day,
+}) async {
+  final current = (habitId: habitId, month: formatMonth(DateTime.now()));
+  final months = {current.month, if (day != null) formatMonth(day)};
+  for (final month in months) {
+    final key = (habitId: habitId, month: month);
+    ref.invalidate(logsProvider(key));
+    ref.invalidate(statsProvider(key));
+  }
+  await Future.wait([
+    ref.read(logsProvider(current).future),
+    ref.read(statsProvider(current).future),
+  ]);
+}

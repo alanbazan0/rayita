@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,6 +11,19 @@ import '../widgets/auth_widgets.dart';
 import '../widgets/google_login_section.dart';
 import '../widgets/welcome_scene.dart';
 import '../widgets/ui.dart';
+
+/// Texto del error de Google. Si viene del plugin (PlatformException) se agrega
+/// el código, porque es lo que permite saber qué falta en Google Cloud
+/// (por ejemplo "ApiException: 10" = la huella SHA-1 no coincide).
+String googleErrorText(Object e, AppLocalizations l) {
+  if (e is DioException) return errorMessage(e, l);
+  if (e is PlatformException) {
+    final detail = (e.message ?? '').trim();
+    final short = detail.length > 120 ? '${detail.substring(0, 120)}…' : detail;
+    return '${l.googleFailed} (${e.code}${short.isEmpty ? '' : ': $short'})';
+  }
+  return l.googleFailed;
+}
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -109,7 +123,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final l = context.l10n;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(e is DioException ? errorMessage(e, l) : l.googleFailed),
+        duration: const Duration(seconds: 8),
+        content: Text(googleErrorText(e, l)),
       ),
     );
   }

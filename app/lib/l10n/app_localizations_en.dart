@@ -416,6 +416,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewList => 'List view';
 
   @override
+  String get viewWide => 'Wide cards view';
+
+  @override
+  String get viewCompact => 'Short cards view';
+
+  @override
+  String get notebookTitle => 'Notebook';
+
+  @override
+  String get notebookMore => 'Show all months';
+
+  @override
+  String get notebookLess => 'Show less';
+
+  @override
   String get inviteCode => 'Invitation code';
 
   @override
