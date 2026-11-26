@@ -11,6 +11,7 @@ import '../core/models.dart';
 import '../core/providers.dart';
 import '../core/theme.dart';
 import '../core/view_mode.dart';
+import '../widgets/ad_banner.dart';
 import '../widgets/tally_logo.dart';
 import '../widgets/habit_dialog.dart';
 import '../widgets/language_button.dart';
@@ -223,6 +224,8 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                 ),
               ),
             ),
+            // Un solo banner discreto, sobre la barra inferior y fuera de la lista.
+            const AdBannerSlot(),
           ],
         ),
       ),

@@ -883,6 +883,66 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Información'**
   String get legalSection;
+
+  /// No description provided for @adsSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Anuncios'**
+  String get adsSection;
+
+  /// No description provided for @removeAds.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar anuncios'**
+  String get removeAds;
+
+  /// No description provided for @removeAdsHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago único. Sin banners, para siempre y en todos tus dispositivos Android.'**
+  String get removeAdsHint;
+
+  /// No description provided for @adsRemovedThanks.
+  ///
+  /// In es, this message translates to:
+  /// **'Los anuncios están desactivados. ¡Gracias por apoyar Rayita!'**
+  String get adsRemovedThanks;
+
+  /// No description provided for @restorePurchase.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurar compra'**
+  String get restorePurchase;
+
+  /// No description provided for @purchaseUnavailable.
+  ///
+  /// In es, this message translates to:
+  /// **'La compra aún no está disponible. Inténtalo más tarde.'**
+  String get purchaseUnavailable;
+
+  /// No description provided for @purchaseDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo, ya no verás anuncios. ¡Gracias!'**
+  String get purchaseDone;
+
+  /// No description provided for @purchaseRestored.
+  ///
+  /// In es, this message translates to:
+  /// **'Compra restaurada. Anuncios desactivados.'**
+  String get purchaseRestored;
+
+  /// No description provided for @purchaseNothingToRestore.
+  ///
+  /// In es, this message translates to:
+  /// **'No encontramos una compra para restaurar.'**
+  String get purchaseNothingToRestore;
+
+  /// No description provided for @purchaseFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo completar la compra.'**
+  String get purchaseFailed;
 }
 
 class _AppLocalizationsDelegate

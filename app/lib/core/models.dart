@@ -7,12 +7,16 @@ class User {
     required this.email,
     this.emailVerified = false,
     this.createdAt,
+    this.adsRemoved = false,
   });
 
   final int id;
   final String name;
   final String email;
   final bool emailVerified;
+
+  /// El servidor ya validó con Google Play la compra de "quitar anuncios".
+  final bool adsRemoved;
 
   /// Cuándo se creó la cuenta (hora local); null si el servidor no lo envía.
   final DateTime? createdAt;
@@ -23,6 +27,7 @@ class User {
     email: j['email'] as String,
     emailVerified: j['email_verified_at'] != null,
     createdAt: DateTime.tryParse(j['created_at'] as String? ?? '')?.toLocal(),
+    adsRemoved: j['ads_removed'] == true,
   );
 }
 

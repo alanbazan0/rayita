@@ -137,5 +137,15 @@
   "contactSupport": "Contact and help",
   "couldNotOpenLink": "Couldn't open the link.",
   "verifiedEmail": "Email verified",
-  "legalSection": "Information"
+  "legalSection": "Information",
+  "adsSection": "Ads",
+  "removeAds": "Remove ads",
+  "removeAdsHint": "One-time payment. No banners, forever and on all your Android devices.",
+  "adsRemovedThanks": "Ads are turned off. Thanks for supporting Rayita!",
+  "restorePurchase": "Restore purchase",
+  "purchaseUnavailable": "The purchase isn't available yet. Please try again later.",
+  "purchaseDone": "Done, you won't see ads anymore. Thank you!",
+  "purchaseRestored": "Purchase restored. Ads are turned off.",
+  "purchaseNothingToRestore": "We couldn't find a purchase to restore.",
+  "purchaseFailed": "The purchase couldn't be completed."
 }

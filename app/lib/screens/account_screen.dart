@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../core/ad_free.dart';
+import '../core/ads.dart';
 import '../core/api.dart';
 import '../core/links.dart';
 import '../core/locale.dart';
@@ -95,6 +97,12 @@ class AccountScreen extends ConsumerWidget {
               FadeSlideIn(
                 child: _ProfileCard(user: user, habitCount: habits?.length),
               ),
+            if (ref.watch(adsSupportedProvider)) ...[
+              const SizedBox(height: 22),
+              _SectionLabel(l.adsSection),
+              const SizedBox(height: 8),
+              const FadeSlideIn(index: 1, child: _RemoveAdsCard()),
+            ],
             const SizedBox(height: 22),
             _SectionLabel(l.legalSection),
             const SizedBox(height: 8),
@@ -300,6 +308,149 @@ class _ProfileCard extends StatelessWidget {
                   ),
                 ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Compra única para quitar el banner (Google Play). Solo en Android.
+class _RemoveAdsCard extends ConsumerStatefulWidget {
+  const _RemoveAdsCard();
+
+  @override
+  ConsumerState<_RemoveAdsCard> createState() => _RemoveAdsCardState();
+}
+
+class _RemoveAdsCardState extends ConsumerState<_RemoveAdsCard> {
+  bool _busy = false;
+
+  void _say(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  /// Manda el token de Google Play al servidor, que lo valida con Google; solo
+  /// entonces la cuenta queda sin anuncios.
+  Future<bool> _confirm(String token, AppLocalizations l) async {
+    try {
+      await ref
+          .read(authProvider.notifier)
+          .verifyPurchase(removeAdsProductId, token);
+      return true;
+    } catch (e) {
+      _say(errorMessage(e, l));
+      return false;
+    }
+  }
+
+  Future<void> _buy() async {
+    final l = context.l10n;
+    setState(() => _busy = true);
+    final result = await ref.read(adFreeStoreProvider).buy();
+    if (result.outcome == PurchaseOutcome.purchased && result.token != null) {
+      if (await _confirm(result.token!, l)) _say(l.purchaseDone);
+    } else {
+      switch (result.outcome) {
+        case PurchaseOutcome.cancelled:
+          break;
+        case PurchaseOutcome.unavailable:
+          _say(l.purchaseUnavailable);
+        default:
+          _say(l.purchaseFailed);
+      }
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  Future<void> _restore() async {
+    final l = context.l10n;
+    setState(() => _busy = true);
+    final token = await ref.read(adFreeStoreProvider).restore();
+    if (token == null) {
+      _say(l.purchaseNothingToRestore);
+    } else if (await _confirm(token, l)) {
+      _say(l.purchaseRestored);
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final removed = ref.watch(adsRemovedProvider);
+    final price = ref.watch(adFreePriceProvider).value;
+
+    if (removed) {
+      return AppCard(
+        child: Row(
+          children: [
+            const Icon(Icons.check_circle_outline, color: AppColors.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l.adsRemovedThanks,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.block, color: AppColors.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  l.removeAds,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              if (price != null)
+                Text(
+                  price,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l.removeAdsHint,
+            style: const TextStyle(color: AppColors.muted, height: 1.35),
+          ),
+          const SizedBox(height: 14),
+          FilledButton(
+            onPressed: _busy ? null : _buy,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(48),
+              shape: const StadiumBorder(),
+            ),
+            child: _busy
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(l.removeAds),
+          ),
+          Center(
+            child: TextButton(
+              onPressed: _busy ? null : _restore,
+              child: Text(l.restorePurchase),
+            ),
           ),
         ],
       ),

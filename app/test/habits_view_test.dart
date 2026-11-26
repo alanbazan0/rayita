@@ -1,9 +1,11 @@
+import 'package:calendar_check/core/ads.dart';
 import 'package:calendar_check/core/api.dart';
 import 'package:calendar_check/core/models.dart';
 import 'package:calendar_check/core/providers.dart';
 import 'package:calendar_check/core/view_mode.dart';
 import 'package:calendar_check/screens/account_screen.dart';
 import 'package:calendar_check/screens/habits_screen.dart';
+import 'package:calendar_check/widgets/ad_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -74,7 +76,7 @@ void main() {
   /// Callbacks que la pantalla registró para el foco de la ventana (web).
   final focusCallbacks = <VoidCallback>[];
 
-  Future<_FakeApi> pumpHome(WidgetTester tester) async {
+  Future<_FakeApi> pumpHome(WidgetTester tester, {bool adsOn = false}) async {
     focusCallbacks.clear();
     tester.view.physicalSize = const Size(800, 1800);
     tester.view.devicePixelRatio = 2;
@@ -84,6 +86,11 @@ void main() {
       ProviderScope(
         overrides: [
           apiProvider.overrideWithValue(api),
+          adsEnabledProvider.overrideWithValue(adsOn),
+          adsPreparerProvider.overrideWithValue(() async => true),
+          adBannerBuilderProvider.overrideWithValue(
+            () => const SizedBox(key: Key('banner'), height: 50),
+          ),
           windowFocusListenerProvider.overrideWithValue((cb) {
             focusCallbacks.add(cb);
             return () => focusCallbacks.remove(cb);
@@ -95,6 +102,24 @@ void main() {
     await tester.pumpAndSettle();
     return api;
   }
+
+  testWidgets(
+    'el banner aparece en la pantalla principal solo si hay anuncios',
+    (tester) async {
+      await pumpHome(tester, adsOn: true);
+      expect(find.byKey(const Key('banner')), findsOneWidget);
+      // Queda debajo de la lista, no tapa los hábitos.
+      expect(
+        tester.getTopLeft(find.byKey(const Key('banner'))).dy,
+        greaterThan(tester.getTopLeft(find.text('Leer')).dy),
+      );
+    },
+  );
+
+  testWidgets('sin anuncios no hay banner', (tester) async {
+    await pumpHome(tester);
+    expect(find.byKey(const Key('banner')), findsNothing);
+  });
 
   testWidgets('por defecto se ven tarjetas', (tester) async {
     await pumpHome(tester);

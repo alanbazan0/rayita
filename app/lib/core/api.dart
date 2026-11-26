@@ -173,6 +173,17 @@ class Api {
     await tokens.clear();
   }
 
+  /// Pide al servidor validar con Google Play la compra de "quitar anuncios".
+  /// Devuelve el usuario ya con `adsRemoved`. Lanza si Google no la confirma
+  /// (422) o no se pudo consultar (503).
+  Future<User> verifyPurchase(String productId, String purchaseToken) async {
+    final res = await dio.post(
+      '/purchases/verify',
+      data: {'product_id': productId, 'purchase_token': purchaseToken},
+    );
+    return User.fromJson(res.data['user'] as Map<String, dynamic>);
+  }
+
   Future<List<Habit>> habits() async {
     final res = await dio.get('/habits');
     return (res.data['data'] as List)

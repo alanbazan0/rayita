@@ -506,4 +506,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get legalSection => 'Information';
+
+  @override
+  String get adsSection => 'Ads';
+
+  @override
+  String get removeAds => 'Remove ads';
+
+  @override
+  String get removeAdsHint =>
+      'One-time payment. No banners, forever and on all your Android devices.';
+
+  @override
+  String get adsRemovedThanks =>
+      'Ads are turned off. Thanks for supporting Rayita!';
+
+  @override
+  String get restorePurchase => 'Restore purchase';
+
+  @override
+  String get purchaseUnavailable =>
+      'The purchase isn\'t available yet. Please try again later.';
+
+  @override
+  String get purchaseDone => 'Done, you won\'t see ads anymore. Thank you!';
+
+  @override
+  String get purchaseRestored => 'Purchase restored. Ads are turned off.';
+
+  @override
+  String get purchaseNothingToRestore =>
+      'We couldn\'t find a purchase to restore.';
+
+  @override
+  String get purchaseFailed => 'The purchase couldn\'t be completed.';
 }

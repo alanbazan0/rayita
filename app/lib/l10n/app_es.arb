@@ -266,6 +266,16 @@
   "couldNotOpenLink": "No se pudo abrir el enlace.",
   "verifiedEmail": "Correo verificado",
   "legalSection": "Información",
+  "adsSection": "Anuncios",
+  "removeAds": "Quitar anuncios",
+  "removeAdsHint": "Pago único. Sin banners, para siempre y en todos tus dispositivos Android.",
+  "adsRemovedThanks": "Los anuncios están desactivados. ¡Gracias por apoyar Rayita!",
+  "restorePurchase": "Restaurar compra",
+  "purchaseUnavailable": "La compra aún no está disponible. Inténtalo más tarde.",
+  "purchaseDone": "Listo, ya no verás anuncios. ¡Gracias!",
+  "purchaseRestored": "Compra restaurada. Anuncios desactivados.",
+  "purchaseNothingToRestore": "No encontramos una compra para restaurar.",
+  "purchaseFailed": "No se pudo completar la compra.",
   "@memberSince": {
     "placeholders": {
       "date": {

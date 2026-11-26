@@ -1,3 +1,4 @@
+import 'package:calendar_check/core/ads.dart';
 import 'package:calendar_check/core/api.dart';
 import 'package:calendar_check/core/models.dart';
 import 'package:calendar_check/core/providers.dart';
@@ -58,6 +59,7 @@ void main() {
       ProviderScope(
         overrides: [
           apiProvider.overrideWithValue(api),
+          adsSupportedProvider.overrideWithValue(false),
           linkOpenerProvider.overrideWithValue((uri) async {
             opened.add(uri);
             return openWorks;

@@ -508,4 +508,38 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get legalSection => 'Información';
+
+  @override
+  String get adsSection => 'Anuncios';
+
+  @override
+  String get removeAds => 'Quitar anuncios';
+
+  @override
+  String get removeAdsHint =>
+      'Pago único. Sin banners, para siempre y en todos tus dispositivos Android.';
+
+  @override
+  String get adsRemovedThanks =>
+      'Los anuncios están desactivados. ¡Gracias por apoyar Rayita!';
+
+  @override
+  String get restorePurchase => 'Restaurar compra';
+
+  @override
+  String get purchaseUnavailable =>
+      'La compra aún no está disponible. Inténtalo más tarde.';
+
+  @override
+  String get purchaseDone => 'Listo, ya no verás anuncios. ¡Gracias!';
+
+  @override
+  String get purchaseRestored => 'Compra restaurada. Anuncios desactivados.';
+
+  @override
+  String get purchaseNothingToRestore =>
+      'No encontramos una compra para restaurar.';
+
+  @override
+  String get purchaseFailed => 'No se pudo completar la compra.';
 }

@@ -80,6 +80,14 @@ class AuthNotifier extends AsyncNotifier<User?> {
     if (!kIsWeb) unawaited(ref.read(googleAuthProvider).signOut());
   }
 
+  /// Valida la compra en el servidor y guarda el usuario ya sin anuncios.
+  Future<void> verifyPurchase(String productId, String purchaseToken) async {
+    final user = await ref
+        .read(apiProvider)
+        .verifyPurchase(productId, purchaseToken);
+    state = AsyncData(user);
+  }
+
   Future<void> logout() async {
     try {
       await ref.read(apiProvider).logout();
