@@ -104,6 +104,16 @@ class HabitsNotifier extends AsyncNotifier<List<Habit>> {
   @override
   Future<List<Habit>> build() => ref.read(apiProvider).habits();
 
+  /// Tras crear, editar o borrar un hábito se vuelve a pedir todo lo suyo: la
+  /// lista y también sus estadísticas y marcas (la meta o los días activos
+  /// cambian la racha, las rayitas y el avance que muestran las tarjetas).
+  Future<void> _reload() async {
+    ref.invalidate(statsProvider);
+    ref.invalidate(logsProvider);
+    ref.invalidateSelf();
+    await future;
+  }
+
   Future<void> create(
     String name,
     String color, {
@@ -120,8 +130,7 @@ class HabitsNotifier extends AsyncNotifier<List<Habit>> {
           goal: goal,
           activeDays: activeDays,
         );
-    ref.invalidateSelf();
-    await future;
+    await _reload();
   }
 
   Future<void> edit(
@@ -142,14 +151,12 @@ class HabitsNotifier extends AsyncNotifier<List<Habit>> {
           goal: goal,
           activeDays: activeDays,
         );
-    ref.invalidateSelf();
-    await future;
+    await _reload();
   }
 
   Future<void> remove(int id) async {
     await ref.read(apiProvider).deleteHabit(id);
-    ref.invalidateSelf();
-    await future;
+    await _reload();
   }
 }
 
