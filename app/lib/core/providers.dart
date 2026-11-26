@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show VoidCallback, kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
 import 'google_auth.dart';
+import 'window_focus.dart';
 import 'locale.dart';
 import 'models.dart';
 
@@ -13,6 +14,11 @@ import 'models.dart';
 final googleAuthProvider = Provider<GoogleAuthService>(
   (ref) => const GoogleAuthService(),
 );
+
+/// Escucha cuándo la ventana del navegador recupera el foco (solo web). Se
+/// sustituye en los tests.
+final windowFocusListenerProvider =
+    Provider<VoidCallback Function(VoidCallback)>((ref) => listenWindowFocus);
 
 /// Abre un enlace fuera de la app (navegador o correo). Se sustituye en los tests.
 final linkOpenerProvider = Provider<Future<bool> Function(Uri)>(

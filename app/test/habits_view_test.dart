@@ -71,14 +71,24 @@ class _FakeApi extends Api {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  /// Callbacks que la pantalla registró para el foco de la ventana (web).
+  final focusCallbacks = <VoidCallback>[];
+
   Future<_FakeApi> pumpHome(WidgetTester tester) async {
+    focusCallbacks.clear();
     tester.view.physicalSize = const Size(800, 1800);
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.reset);
     final api = _FakeApi();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [apiProvider.overrideWithValue(api)],
+        overrides: [
+          apiProvider.overrideWithValue(api),
+          windowFocusListenerProvider.overrideWithValue((cb) {
+            focusCallbacks.add(cb);
+            return () => focusCallbacks.remove(cb);
+          }),
+        ],
         child: testApp(home: const HabitsScreen()),
       ),
     );
@@ -145,6 +155,59 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(api.habitsCalls, greaterThan(antes));
+  });
+
+  testWidgets('al recuperar el foco la ventana (web) se refresca la lista', (
+    tester,
+  ) async {
+    final api = await pumpHome(tester);
+    expect(focusCallbacks, hasLength(1));
+    final antes = api.habitsCalls;
+
+    focusCallbacks.single();
+    await tester.pumpAndSettle();
+
+    expect(api.habitsCalls, greaterThan(antes));
+  });
+
+  testWidgets('el foco y la visibilidad a la vez no piden dos veces', (
+    tester,
+  ) async {
+    final api = await pumpHome(tester);
+    final antes = api.habitsCalls;
+
+    focusCallbacks.single();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    focusCallbacks.single();
+    await tester.pumpAndSettle();
+
+    expect(api.habitsCalls, antes + 1);
+  });
+
+  testWidgets(
+    'deslizar para refrescar funciona aunque acabe de haber un refresco automático',
+    (tester) async {
+      final api = await pumpHome(tester);
+      focusCallbacks.single();
+      await tester.pumpAndSettle();
+      final antes = api.habitsCalls;
+
+      await tester.fling(find.byType(ListView), const Offset(0, 500), 1000);
+      await tester.pumpAndSettle();
+
+      expect(api.habitsCalls, greaterThan(antes));
+    },
+  );
+
+  testWidgets('al salir de la pantalla deja de escuchar el foco', (
+    tester,
+  ) async {
+    await pumpHome(tester);
+    expect(focusCallbacks, hasLength(1));
+
+    await tester.pumpWidget(const SizedBox());
+    expect(focusCallbacks, isEmpty);
   });
 
   test('ViewModeNotifier ignora valores guardados que no conoce', () async {

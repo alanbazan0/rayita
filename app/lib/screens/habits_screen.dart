@@ -28,14 +28,20 @@ class HabitsScreen extends ConsumerStatefulWidget {
 
 class _HabitsScreenState extends ConsumerState<HabitsScreen>
     with WidgetsBindingObserver {
+  VoidCallback? _stopListeningFocus;
+  DateTime? _lastAutoRefresh;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // En web, volver a esta ventana (aunque ninguna se haya ocultado) también refresca.
+    _stopListeningFocus = ref.read(windowFocusListenerProvider)(_autoRefresh);
   }
 
   @override
   void dispose() {
+    _stopListeningFocus?.call();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -44,7 +50,19 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
   /// haya cambiado desde otro dispositivo.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _refreshAll();
+    if (state == AppLifecycleState.resumed) _autoRefresh();
+  }
+
+  /// Refresco automático (volver a la app o a la ventana). El foco y la
+  /// visibilidad suelen cambiar a la vez: se evita pedir dos veces seguidas.
+  void _autoRefresh() {
+    final now = DateTime.now();
+    final last = _lastAutoRefresh;
+    if (last != null && now.difference(last) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastAutoRefresh = now;
+    _refreshAll();
   }
 
   void _refreshAll() {
