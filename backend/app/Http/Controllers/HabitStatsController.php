@@ -40,6 +40,21 @@ class HabitStatsController extends Controller
         $doneDates = $habit->logs()->done()->orderBy('date')->get()
             ->map(fn ($log) => $log->date->toDateString());
 
+        // Primera marca de cualquier tipo: el hábito "empieza" ahí, no el día en que se creó
+        // (se pueden registrar días atrás).
+        $first = $habit->logs()->min('date');
+
+        // Cuaderno de rayitas: los días cumplidos agrupados por mes, del más reciente al más antiguo.
+        $history = $doneDates
+            ->groupBy(fn ($date) => substr($date, 0, 7))
+            ->map(fn ($dates, $monthKey) => [
+                'month' => (string) $monthKey,
+                'done' => $dates->count(),
+                'tally' => $this->tally->fromCount($dates->count()),
+            ])
+            ->sortKeysDesc()
+            ->values();
+
         $streak = $this->streaks->calculate($doneDates, $today, $habit->activeDays());
 
         $monthPrefix = $month.'-';
@@ -53,6 +68,8 @@ class HabitStatsController extends Controller
             'current_streak' => $streak['current'],
             'longest_streak' => $streak['longest'],
             'goal' => $this->goals->evaluate($habit, $doneDates, $today),
+            'since' => $first ? substr((string) $first, 0, 10) : null,
+            'history' => $history,
             'month' => [
                 'month' => $month,
                 'done' => $monthDone,
