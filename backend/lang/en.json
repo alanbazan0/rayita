@@ -50,5 +50,8 @@
     "El inicio de sesión con Google no está disponible.": "Google sign-in is not available.",
     "El correo no coincide con el de tu cuenta.": "The email doesn't match your account's email.",
     "Tu cuenta fue eliminada.": "Your account has been deleted.",
-    "Escribe el correo de tu cuenta para confirmar.": "Enter your account's email to confirm."
+    "Escribe el correo de tu cuenta para confirmar.": "Enter your account's email to confirm.",
+    "Esta compra ya está ligada a otra cuenta.": "This purchase is already linked to another account.",
+    "No pudimos confirmar la compra con Google Play.": "We couldn't confirm the purchase with Google Play.",
+    "No se pudo validar la compra ahora. Inténtalo más tarde.": "The purchase couldn't be validated right now. Please try again later."
 }

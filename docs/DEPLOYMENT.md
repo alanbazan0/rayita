@@ -31,9 +31,32 @@ puerto FTP (21) no lo son y están escritos en los workflows (`env:` al inicio d
 | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Base MySQL creada en cPanel (HostGator antepone el usuario de cPanel) |
 | `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` | **Opcionales.** Solo si usas SMTP. Sin `MAIL_HOST`, el correo sale por el `sendmail` del servidor |
 | `INVITE_CODE` | **Ya no es un secreto**: está en el `env:` de `deploy-api.yml` y hoy va vacío (registro abierto) |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_B64` | **Opcional hasta vender "Quitar anuncios".** El JSON de la cuenta de servicio de Google Cloud, en base64 de una sola línea: `base64 -i cuenta.json \| tr -d '\n'`. Ver abajo |
 
 Se pueden crear a mano en *Settings → Secrets and variables → Actions*, o cargar todos de una
 vez desde `.env.deploy` con `deploy/set-github-secrets.sh`.
+
+## Compra de "Quitar anuncios" (validación en el servidor)
+
+La app manda el token de la compra a `POST /api/purchases/verify` y el servidor lo valida con la API
+de Google Play Developer. Solo entonces la cuenta queda con `ads_removed: true`. Hace falta una
+cuenta de servicio, creada una sola vez:
+
+1. **Google Cloud** (proyecto `rayita-515805`): habilita la *Google Play Android Developer API*,
+   crea una cuenta de servicio (sin roles de proyecto) y descarga su llave en JSON.
+2. **Play Console → Usuarios y permisos → Invitar usuarios**: invita el correo de esa cuenta de
+   servicio con el permiso *Ver información financiera, pedidos y respuestas de encuestas de
+   cancelación* y *Administrar pedidos y suscripciones*, para la app Rayita. Puede tardar un rato
+   en aplicarse (hasta unas horas).
+3. Codifica el JSON y guárdalo como secreto `GOOGLE_PLAY_SERVICE_ACCOUNT_B64` (sin pegarlo en ningún chat):
+   `base64 -i cuenta.json | tr -d '\n' | pbcopy`
+4. Vuelve a desplegar la API (el workflow escribe el valor en el `.env` del servidor).
+5. Crea el producto **`remove_ads`** (no consumible, 49 MXN) en Play Console → *Monetizar con Play*
+   → *Productos* → *Productos integrados*. Necesita que la app esté subida a una pista.
+
+Sin el secreto, el endpoint responde 503 ("No se pudo validar la compra ahora") y nadie queda sin
+anuncios: es el comportamiento seguro. Para probar compras reales sin cobrarte, agrega tu correo en
+Play Console → *Configuración → Pruebas de licencia*.
 
 ## Correo de los códigos de verificación
 

@@ -50,5 +50,8 @@
     "El inicio de sesión con Google no está disponible.": "El inicio de sesión con Google no está disponible.",
     "El correo no coincide con el de tu cuenta.": "El correo no coincide con el de tu cuenta.",
     "Tu cuenta fue eliminada.": "Tu cuenta fue eliminada.",
-    "Escribe el correo de tu cuenta para confirmar.": "Escribe el correo de tu cuenta para confirmar."
+    "Escribe el correo de tu cuenta para confirmar.": "Escribe el correo de tu cuenta para confirmar.",
+    "Esta compra ya está ligada a otra cuenta.": "Esta compra ya está ligada a otra cuenta.",
+    "No pudimos confirmar la compra con Google Play.": "No pudimos confirmar la compra con Google Play.",
+    "No se pudo validar la compra ahora. Inténtalo más tarde.": "No se pudo validar la compra ahora. Inténtalo más tarde."
 }

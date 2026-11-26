@@ -35,6 +35,14 @@ return [
         'ios_client_id' => env('GOOGLE_IOS_CLIENT_ID'),
     ],
 
+    // Compras de Google Play. La cuenta de servicio (JSON en base64) necesita permiso
+    // "Ver información financiera y administrar pedidos" en Play Console.
+    'google_play' => [
+        'package' => env('GOOGLE_PLAY_PACKAGE', 'com.rayita.app'),
+        'remove_ads_product' => 'remove_ads',
+        'service_account_b64' => env('GOOGLE_PLAY_SERVICE_ACCOUNT_B64'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

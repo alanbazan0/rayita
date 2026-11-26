@@ -6,6 +6,7 @@ use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\HabitController;
 use App\Http\Controllers\HabitLogController;
 use App\Http\Controllers\HabitStatsController;
+use App\Http\Controllers\PurchaseController;
 use App\Http\Middleware\EnsureEmailVerified;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Todo lo demás exige correo verificado.
     Route::middleware(EnsureEmailVerified::class)->group(function () {
+        Route::post('/purchases/verify', [PurchaseController::class, 'verify'])->middleware('throttle:10,1');
+
         Route::apiResource('habits', HabitController::class);
         Route::get('/habits/{habit}/stats', [HabitStatsController::class, 'show']);
 

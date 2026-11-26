@@ -98,6 +98,7 @@ jobs:
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           GOOGLE_IOS_CLIENT_ID: ${{ secrets.GOOGLE_IOS_CLIENT_ID }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_B64: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_B64 }}
         run: |
           # El puerto 465 usa TLS implícito (smtps); los demás, STARTTLS (smtp).
           scheme=smtp; [ "$MAIL_PORT" = "465" ] && scheme=smtps
@@ -136,6 +137,8 @@ jobs:
             printf "INVITE_CODE='%s'\n" "$INVITE_CODE"
             printf "GOOGLE_CLIENT_ID='%s'\n" "$GOOGLE_CLIENT_ID"
             printf "GOOGLE_IOS_CLIENT_ID='%s'\n" "$GOOGLE_IOS_CLIENT_ID"
+            # Cuenta de servicio para validar compras de Google Play (vacío = sin validar, la compra responde 503).
+            printf "GOOGLE_PLAY_SERVICE_ACCOUNT_B64='%s'\n" "$GOOGLE_PLAY_SERVICE_ACCOUNT_B64"
           } > .env.production
           curl -fsS -X POST -H "X-Deploy-Token: $DEPLOY_TOKEN" \
             --data-binary @.env.production "$WEB_URL/deploy.php?action=write-env"

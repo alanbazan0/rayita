@@ -156,6 +156,7 @@ y un correo verificado.
 | 🔒 GET | `/habits/{id}/stats` | Rachas, palitos y avance de la meta |
 | 🔒 GET | `/logs?month=AAAA-MM` | Marcas del mes |
 | 🔒 PUT / DELETE | `/habits/{id}/logs/{AAAA-MM-DD}` | Marcar o quitar un día |
+| 🔒 POST | `/purchases/verify` | Validar con Google Play la compra de "Quitar anuncios" (`ads_removed` en `/me`) |
 
 El idioma de los mensajes se toma del encabezado `Accept-Language` (`es` por defecto).
 
