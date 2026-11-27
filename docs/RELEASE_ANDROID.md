@@ -23,6 +23,16 @@ necesita uno mayor** (`+2`, `+3`…). La parte `1.0.0` es la que ve la gente.
 
 ## 3. Compilar
 
+**Anuncios reales de AdMob.** Los dos IDs son públicos (van dentro de la app) y salen de tu consola de AdMob:
+el *App ID* (con `~`) y el *ID del bloque de banner* (con `/`). Sin ellos se usan los de PRUEBA de Google,
+que no generan ingresos, y un `.aab` se niega a generarse (salvo `ALLOW_TEST_ADS=1`, para una prueba interna).
+
+```bash
+ADMOB_APP_ID=ca-app-pub-XXXX~YYYY ADMOB_BANNER_ID=ca-app-pub-XXXX/ZZZZ app/tool/build_release.sh appbundle
+```
+
+El script comprueba que los dos sean del mismo publicador y que no sean los de prueba.
+
 ```bash
 app/tool/build_release.sh appbundle     # .aab para Google Play (ofuscado, con R8)
 app/tool/build_release.sh apk           # APK para instalar directo en un teléfono

@@ -37,6 +37,15 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // App ID de AdMob (termina en "~"): se pasa con -PADMOB_APP_ID=... o la variable de
+        // entorno ADMOB_APP_ID. Sin ella se usa el ID de PRUEBA de Google, que no genera ingresos.
+        // tool/build_release.sh se encarga de pasarlo y de impedir publicar con el de prueba.
+        val testAdmobAppId = "ca-app-pub-3940256099942544~3347511713"
+        manifestPlaceholders["admobAppId"] =
+            (project.findProperty("ADMOB_APP_ID") as String?)
+                ?: System.getenv("ADMOB_APP_ID")
+                ?: testAdmobAppId
     }
 
     signingConfigs {

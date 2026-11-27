@@ -251,7 +251,9 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
               ),
             ),
             // Un solo banner discreto, sobre la barra inferior y fuera de la lista.
-            const AdBannerSlot(),
+            // El botón "+" sobresale hacia arriba unos 28 dp: el hueco evita que tape el
+            // anuncio (tocar un anuncio por accidente cuenta como clic inválido).
+            const AdBannerSlot(bottomGap: 32),
           ],
         ),
       ),

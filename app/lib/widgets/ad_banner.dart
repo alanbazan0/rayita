@@ -4,16 +4,23 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../core/ads.dart';
 
-/// Construye el banner real. Se sustituye en los tests.
-final adBannerBuilderProvider = Provider<Widget Function()>(
+/// Construye el banner real, con el hueco inferior que pide la pantalla.
+/// Se sustituye en los tests.
+final adBannerBuilderProvider = Provider<Widget Function(double bottomGap)>(
   (ref) =>
-      () => const _AdaptiveBanner(),
+      (bottomGap) => _AdaptiveBanner(bottomGap: bottomGap),
 );
 
-/// Espacio del banner en la pantalla principal: no ocupa nada si no hay
-/// anuncios (web, compra de "quitar anuncios" o sin consentimiento).
+/// Espacio del banner al pie de una pantalla (principal y detalle del hábito): no
+/// ocupa nada si no hay anuncios (web, compra de "quitar anuncios" o sin consentimiento).
+///
+/// Va siempre fuera de la zona que se desplaza y lejos de botones y días del
+/// calendario, para evitar toques accidentales (AdMob los penaliza).
 class AdBannerSlot extends ConsumerStatefulWidget {
-  const AdBannerSlot({super.key});
+  const AdBannerSlot({super.key, this.bottomGap = 0});
+
+  /// Hueco bajo el anuncio, por si algo flota encima (el botón "+" de la principal).
+  final double bottomGap;
 
   @override
   ConsumerState<AdBannerSlot> createState() => _AdBannerSlotState();
@@ -38,14 +45,16 @@ class _AdBannerSlotState extends ConsumerState<AdBannerSlot> {
     if (!ref.watch(adsEnabledProvider) || !_ready) {
       return const SizedBox.shrink();
     }
-    return ref.read(adBannerBuilderProvider)();
+    return ref.read(adBannerBuilderProvider)(widget.bottomGap);
   }
 }
 
 /// Banner adaptable al ancho de la pantalla. Reserva su alto solo cuando el
 /// anuncio ya cargó, para que la pantalla no salte ni quede un hueco vacío.
 class _AdaptiveBanner extends StatefulWidget {
-  const _AdaptiveBanner();
+  const _AdaptiveBanner({required this.bottomGap});
+
+  final double bottomGap;
 
   @override
   State<_AdaptiveBanner> createState() => _AdaptiveBannerState();
@@ -96,10 +105,8 @@ class _AdaptiveBannerState extends State<_AdaptiveBanner> {
     }
     final ad = _ad;
     if (ad == null || !_loaded) return const SizedBox.shrink();
-    // El botón "+" de la barra inferior sobresale hacia arriba unos 28 dp: el hueco
-    // evita que tape el anuncio (tocar un anuncio por accidente cuenta como clic inválido).
     return Padding(
-      padding: const EdgeInsets.only(bottom: 32),
+      padding: EdgeInsets.only(bottom: widget.bottomGap),
       child: Container(
         alignment: Alignment.center,
         width: double.infinity,

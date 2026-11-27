@@ -21,7 +21,7 @@ void main() {
             return prepare();
           }),
           adBannerBuilderProvider.overrideWithValue(
-            () => const SizedBox(key: Key('banner'), height: 50),
+            (_) => const SizedBox(key: Key('banner'), height: 50),
           ),
         ],
         child: const MaterialApp(home: Scaffold(body: AdBannerSlot())),
@@ -72,7 +72,7 @@ void main() {
             () => Future<bool>.delayed(const Duration(seconds: 5), () => true),
           ),
           adBannerBuilderProvider.overrideWithValue(
-            () => const SizedBox(key: Key('banner'), height: 50),
+            (_) => const SizedBox(key: Key('banner'), height: 50),
           ),
         ],
         child: const MaterialApp(home: Scaffold(body: AdBannerSlot())),
@@ -94,5 +94,47 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     expect(platformSupportsAds, isFalse);
     debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('el hueco inferior que pide la pantalla llega al banner', (
+    tester,
+  ) async {
+    double? received;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          adsEnabledProvider.overrideWithValue(true),
+          adsPreparerProvider.overrideWithValue(() async => true),
+          adBannerBuilderProvider.overrideWithValue((gap) {
+            received = gap;
+            return const SizedBox(key: Key('banner'), height: 50);
+          }),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(body: AdBannerSlot(bottomGap: 32)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(received, 32);
+  });
+
+  testWidgets('sin indicarlo, el banner no deja hueco', (tester) async {
+    double? received;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          adsEnabledProvider.overrideWithValue(true),
+          adsPreparerProvider.overrideWithValue(() async => true),
+          adBannerBuilderProvider.overrideWithValue((gap) {
+            received = gap;
+            return const SizedBox(key: Key('banner'), height: 50);
+          }),
+        ],
+        child: const MaterialApp(home: Scaffold(body: AdBannerSlot())),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(received, 0);
   });
 }

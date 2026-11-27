@@ -89,7 +89,7 @@ void main() {
           adsEnabledProvider.overrideWithValue(adsOn),
           adsPreparerProvider.overrideWithValue(() async => true),
           adBannerBuilderProvider.overrideWithValue(
-            () => const SizedBox(key: Key('banner'), height: 50),
+            (_) => const SizedBox(key: Key('banner'), height: 50),
           ),
           windowFocusListenerProvider.overrideWithValue((cb) {
             focusCallbacks.add(cb);

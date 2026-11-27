@@ -8,6 +8,7 @@ import '../core/locale.dart';
 import '../core/models.dart';
 import '../core/providers.dart';
 import '../core/theme.dart';
+import '../widgets/ad_banner.dart';
 import '../widgets/goal_progress.dart';
 import '../widgets/habit_dialog.dart';
 import '../widgets/month_calendar.dart';
@@ -160,266 +161,286 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        child: Column(
           children: [
-            Row(
-              children: [
-                RoundAction(
-                  child: IconButton(
-                    tooltip: MaterialLocalizations.of(context)
-                        .backButtonTooltip,
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.of(context).maybePop(),
-                  ),
-                ),
-                const Spacer(),
-                RoundAction(
-                  child: IconButton(
-                    tooltip: l.editHabit,
-                    icon: const Icon(Icons.edit_outlined),
-                    onPressed: _edit,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                RoundAction(
-                  child: IconButton(
-                    tooltip: l.deleteHabit,
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: _delete,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            FadeSlideIn(
-              child: Container(
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  gradient: habitGradient(color),
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.35),
-                      blurRadius: 24,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        HabitAvatar(
-                          icon: habit.icon,
-                          color: color,
-                          label: habit.name,
-                          radius: 26,
-                          inverted: true,
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+                children: [
+                  Row(
+                    children: [
+                      RoundAction(
+                        child: IconButton(
+                          tooltip: MaterialLocalizations.of(context)
+                              .backButtonTooltip,
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () => Navigator.of(context).maybePop(),
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+                      const Spacer(),
+                      RoundAction(
+                        child: IconButton(
+                          tooltip: l.editHabit,
+                          icon: const Icon(Icons.edit_outlined),
+                          onPressed: _edit,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      RoundAction(
+                        child: IconButton(
+                          tooltip: l.deleteHabit,
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: _delete,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  FadeSlideIn(
+                    child: Container(
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        gradient: habitGradient(color),
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.35),
+                            blurRadius: 24,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Text(
-                                habit.name,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
+                              HabitAvatar(
+                                icon: habit.icon,
+                                color: color,
+                                label: habit.name,
+                                radius: 26,
+                                inverted: true,
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      habit.name,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.titleLarge
+                                          ?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                    ),
+                                    if (started != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 2),
+                                        child: Text(
+                                          l.habitSince(
+                                            _fmtDate(context, started),
+                                          ),
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.85,
+                                            ),
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
-                              if (started != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 2),
-                                  child: Text(
-                                    l.habitSince(_fmtDate(context, started)),
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.85,
-                                      ),
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 13,
-                                    ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _HeroStat(
+                                  emoji: '🔥',
+                                  value: stats.value?.currentStreak,
+                                  label: l.currentStreak,
+                                ),
+                              ),
+                              Expanded(
+                                child: _HeroStat(
+                                  emoji: '🏆',
+                                  value: stats.value?.longestStreak,
+                                  label: l.longestStreak,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  if (overview != null) ...[
+                    FadeSlideIn(
+                      index: 1,
+                      child: _Notebook(
+                        history: overview.history,
+                        total: overview.totalDone,
+                        color: color,
+                        now: DateTime.now(),
+                        selected: _month,
+                        onSelect: (m) => setState(() => _month = m),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+                  FadeSlideIn(
+                    index: 2,
+                    child: AppCard(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              IconButton(
+                                tooltip: l.previousMonth,
+                                icon: const Icon(Icons.chevron_left),
+                                onPressed: () => _shift(-1),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _HeroStat(
-                            emoji: '🔥',
-                            value: stats.value?.currentStreak,
-                            label: l.currentStreak,
-                          ),
-                        ),
-                        Expanded(
-                          child: _HeroStat(
-                            emoji: '🏆',
-                            value: stats.value?.longestStreak,
-                            label: l.longestStreak,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            if (overview != null) ...[
-              FadeSlideIn(
-                index: 1,
-                child: _Notebook(
-                  history: overview.history,
-                  total: overview.totalDone,
-                  color: color,
-                  now: DateTime.now(),
-                  selected: _month,
-                  onSelect: (m) => setState(() => _month = m),
-                ),
-              ),
-              const SizedBox(height: 18),
-            ],
-            FadeSlideIn(
-              index: 2,
-              child: AppCard(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          tooltip: l.previousMonth,
-                          icon: const Icon(Icons.chevron_left),
-                          onPressed: () => _shift(-1),
-                        ),
-                        Expanded(
-                          child: Text(
-                            title,
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: l.nextMonth,
-                          icon: const Icon(Icons.chevron_right),
-                          onPressed: () => _shift(1),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    logs.when(
-                      loading: () => const SizedBox(
-                        height: 260,
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                      error: (e, _) => SizedBox(
-                        height: 120,
-                        child: Center(
-                          child: Text(errorMessage(e, context.l10n)),
-                        ),
-                      ),
-                      data: (list) => MonthCalendar(
-                        month: _month,
-                        color: color,
-                        logs: {for (final x in list) x.date: x.status},
-                        onDayTap: _onDayTap,
-                        activeDays: habit.activeDays,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 18,
-                      children: [
-                        _LegendDot(
-                          color: color,
-                          filled: true,
-                          label: l.statusDone,
-                        ),
-                        _LegendDot(
-                          color: color,
-                          filled: false,
-                          label: l.todayLabel,
-                          ringOnly: true,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      l.tapDayHint,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: AppColors.muted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            stats.when(
-              loading: () => const SizedBox.shrink(),
-              error: (e, _) => Text(errorMessage(e, context.l10n)),
-              data: (s) => Column(
-                children: [
-                  if (s.goal != null) ...[
-                    FadeSlideIn(
-                      index: 3,
-                      child: AppCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l.goalTitle,
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.w800),
-                            ),
-                            const SizedBox(height: 10),
-                            if (habit.goalStart != null) ...[
-                              Text(
-                                habit.goalEnd == null
-                                    ? l.goalPeriodFrom(
-                                        _fmtDay(context, habit.goalStart!),
-                                      )
-                                    : l.goalPeriodRange(
-                                        _fmtDay(context, habit.goalStart!),
-                                        _fmtDay(context, habit.goalEnd!),
-                                      ),
-                                style: const TextStyle(
-                                  color: AppColors.muted,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
-                                ),
                               ),
-                              const SizedBox(height: 10),
+                              IconButton(
+                                tooltip: l.nextMonth,
+                                icon: const Icon(Icons.chevron_right),
+                                onPressed: () => _shift(1),
+                              ),
                             ],
-                            GoalProgressBar(
-                              goal: s.goal!,
-                              color: color,
-                              showDaysLeft: true,
+                          ),
+                          const SizedBox(height: 6),
+                          logs.when(
+                            loading: () => const SizedBox(
+                              height: 260,
+                              child: Center(child: CircularProgressIndicator()),
                             ),
-                          ],
-                        ),
+                            error: (e, _) => SizedBox(
+                              height: 120,
+                              child: Center(
+                                child: Text(errorMessage(e, context.l10n)),
+                              ),
+                            ),
+                            data: (list) => MonthCalendar(
+                              month: _month,
+                              color: color,
+                              logs: {for (final x in list) x.date: x.status},
+                              onDayTap: _onDayTap,
+                              activeDays: habit.activeDays,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 18,
+                            children: [
+                              _LegendDot(
+                                color: color,
+                                filled: true,
+                                label: l.statusDone,
+                              ),
+                              _LegendDot(
+                                color: color,
+                                filled: false,
+                                label: l.todayLabel,
+                                ringOnly: true,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            l.tapDayHint,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: AppColors.muted,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-                  ],
+                  ),
+                  const SizedBox(height: 18),
+                  stats.when(
+                    loading: () => const SizedBox.shrink(),
+                    error: (e, _) => Text(errorMessage(e, context.l10n)),
+                    data: (s) => Column(
+                      children: [
+                        if (s.goal != null) ...[
+                          FadeSlideIn(
+                            index: 3,
+                            child: AppCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l.goalTitle,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(fontWeight: FontWeight.w800),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  if (habit.goalStart != null) ...[
+                                    Text(
+                                      habit.goalEnd == null
+                                          ? l.goalPeriodFrom(
+                                              _fmtDay(
+                                                context,
+                                                habit.goalStart!,
+                                              ),
+                                            )
+                                          : l.goalPeriodRange(
+                                              _fmtDay(
+                                                context,
+                                                habit.goalStart!,
+                                              ),
+                                              _fmtDay(context, habit.goalEnd!),
+                                            ),
+                                      style: const TextStyle(
+                                        color: AppColors.muted,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                  ],
+                                  GoalProgressBar(
+                                    goal: s.goal!,
+                                    color: color,
+                                    showDaysLeft: true,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                        ],
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
+            // Banner fijo al pie: no se desplaza con el contenido y queda lejos del
+            // calendario y de los botones de editar y borrar.
+            const AdBannerSlot(),
           ],
         ),
       ),
