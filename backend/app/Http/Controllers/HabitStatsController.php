@@ -40,9 +40,9 @@ class HabitStatsController extends Controller
         $doneDates = $habit->logs()->done()->orderBy('date')->get()
             ->map(fn ($log) => $log->date->toDateString());
 
-        // Primera marca de cualquier tipo: el hábito "empieza" ahí, no el día en que se creó
-        // (se pueden registrar días atrás).
-        $first = $habit->logs()->min('date');
+        // Primera marca: el hábito "empieza" ahí, no el día en que se creó (se pueden
+        // registrar días atrás). Las marcas "parcial" antiguas ya no cuentan.
+        $first = $habit->logs()->done()->min('date');
 
         // Cuaderno de rayitas: los días cumplidos agrupados por mes, del más reciente al más antiguo.
         $history = $doneDates
@@ -59,9 +59,6 @@ class HabitStatsController extends Controller
 
         $monthPrefix = $month.'-';
         $monthDone = $doneDates->filter(fn ($d) => str_starts_with($d, $monthPrefix))->count();
-        $monthPartial = $habit->logs()->inMonth($month)
-            ->where('status', 'partial')->count();
-        $totalPartial = $habit->logs()->where('status', 'partial')->count();
 
         return response()->json([
             'habit_id' => $habit->id,
@@ -73,12 +70,13 @@ class HabitStatsController extends Controller
             'month' => [
                 'month' => $month,
                 'done' => $monthDone,
-                'partial' => $monthPartial,
+                // Obsoleto: lo siguen leyendo las apps anteriores a quitar el estado parcial.
+                'partial' => 0,
                 'tally' => $this->tally->fromCount($monthDone),
             ],
             'total' => [
                 'done' => $doneDates->count(),
-                'partial' => $totalPartial,
+                'partial' => 0,
                 'tally' => $this->tally->fromCount($doneDates->count()),
             ],
         ]);

@@ -29,6 +29,8 @@ class HabitLogController extends Controller
             ->whereHas('habit', fn ($q) => $q->where('user_id', $request->user()->id))
             ->when($data['habit_id'] ?? null, fn ($q, $id) => $q->where('habit_id', $id))
             ->inMonth($data['month'])
+            // Las marcas "parcial" de antes siguen guardadas pero ya no se muestran.
+            ->where('status', LogStatus::Done->value)
             ->orderBy('date')
             ->get();
 

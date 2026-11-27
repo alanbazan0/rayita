@@ -51,7 +51,8 @@ class HabitStatsTest extends TestCase
             // 10-31 + 11-01..11-05 son seis días seguidos.
             ->assertJsonPath('longest_streak', 6)
             ->assertJsonPath('month.done', 7)
-            ->assertJsonPath('month.partial', 1)
+            // Las marcas parciales antiguas ya no cuentan para nada.
+            ->assertJsonPath('month.partial', 0)
             ->assertJsonPath('month.tally', ['total' => 7, 'groups' => 1, 'remainder' => 2])
             ->assertJsonPath('total.done', 8)
             ->assertJsonPath('total.tally', ['total' => 8, 'groups' => 1, 'remainder' => 3]);

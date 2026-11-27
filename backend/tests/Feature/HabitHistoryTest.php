@@ -74,15 +74,15 @@ class HabitHistoryTest extends TestCase
         $this->stats('?today=2026-11-25&month=2026-11')->assertJsonCount(2, 'history');
     }
 
-    public function test_las_marcas_parciales_no_suman_rayitas_pero_si_marcan_el_inicio(): void
+    public function test_una_marca_parcial_antigua_no_suma_rayitas_ni_marca_el_inicio(): void
     {
         $this->mark('2026-11-20', partial: true);
         $this->mark('2026-11-23');
 
         $response = $this->stats();
         $response->assertJsonPath('history.0.done', 1)->assertJsonCount(1, 'history');
-        // El hábito empieza en su primera marca, sea cumplida o parcial.
-        $response->assertJsonPath('since', '2026-11-20');
+        // El hábito empieza en su primera marca cumplida; el parcial está oculto.
+        $response->assertJsonPath('since', '2026-11-23');
     }
 
     public function test_since_es_la_primera_marca_aunque_se_registre_despues(): void

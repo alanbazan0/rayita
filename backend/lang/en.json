@@ -11,7 +11,7 @@
     "El ícono no puede superar 50 caracteres.": "The icon cannot exceed 50 characters.",
     "La fecha debe tener formato AAAA-MM-DD.": "The date must use the YYYY-MM-DD format.",
     "No se pueden marcar días futuros.": "Future days cannot be marked.",
-    "El estado debe ser \"done\" o \"partial\".": "The status must be \"done\" or \"partial\".",
+    "El estado debe ser \"done\".": "The status must be \"done\".",
     "El mes es obligatorio (AAAA-MM).": "The month is required (YYYY-MM).",
     "El mes debe tener formato AAAA-MM.": "The month must use the YYYY-MM format.",
     "Correo o contraseña incorrectos.": "Incorrect email or password.",

@@ -31,11 +31,44 @@ class HabitLogTest extends TestCase
             ->assertJson(['data' => ['date' => '2026-11-01', 'status' => 'done']]);
     }
 
-    public function test_marcar_es_idempotente_y_actualiza_estado(): void
+    public function test_marcar_es_idempotente(): void
     {
         $url = "/api/habits/{$this->habit->id}/logs/2026-11-01";
         $this->putJson($url)->assertCreated();
-        $this->putJson($url, ['status' => 'partial'])->assertOk()->assertJsonPath('data.status', 'partial');
+        $this->putJson($url, ['status' => 'done'])->assertOk()->assertJsonPath('data.status', 'done');
+
+        $this->assertSame(1, HabitLog::count());
+    }
+
+    public function test_el_estado_parcial_ya_no_se_acepta(): void
+    {
+        $this->putJson("/api/habits/{$this->habit->id}/logs/2026-11-01", ['status' => 'partial'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('status');
+
+        $this->assertSame(0, HabitLog::count());
+    }
+
+    public function test_una_marca_parcial_antigua_no_se_muestra_pero_se_conserva(): void
+    {
+        HabitLog::factory()->for($this->habit)->partial()->create(['date' => '2026-11-14']);
+        HabitLog::factory()->for($this->habit)->create(['date' => '2026-11-20']);
+
+        $this->getJson('/api/logs?month=2026-11')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.date', '2026-11-20');
+
+        $this->assertSame(2, HabitLog::count(), 'no se borra nada');
+    }
+
+    public function test_marcar_un_dia_con_parcial_antiguo_lo_convierte_en_cumplido(): void
+    {
+        HabitLog::factory()->for($this->habit)->partial()->create(['date' => '2026-11-14']);
+
+        $this->putJson("/api/habits/{$this->habit->id}/logs/2026-11-14")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'done');
 
         $this->assertSame(1, HabitLog::count());
     }
