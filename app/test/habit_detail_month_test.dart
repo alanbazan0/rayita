@@ -86,8 +86,8 @@ void main() {
         find.text('58'),
         findsOneWidget,
       ); // total (no puede ser un día del calendario)
-      expect(find.text('3'), findsWidgets); // este mes
-      expect(find.text('41'), findsOneWidget); // mes anterior
+      // Solo se muestra el total: cada línea lleva sus rayitas, sin repetir el número.
+      expect(find.text('41'), findsNothing);
       expect(find.byType(TallyMarks), findsNWidgets(2));
 
       // Está arriba del calendario.
@@ -131,7 +131,7 @@ void main() {
   ) async {
     final api = await pumpDetail(tester);
 
-    await tester.tap(find.text('41')); // línea del mes anterior
+    await tester.tap(find.byType(TallyMarks).at(1)); // línea del mes anterior
     await tester.pumpAndSettle();
 
     expect(api.statsMonths.last, formatMonth(_prevMonth));

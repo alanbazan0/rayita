@@ -90,8 +90,6 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
         case null:
           await api.setLog(widget.habit.id, date, LogStatus.done);
         case LogStatus.done:
-          await api.setLog(widget.habit.id, date, LogStatus.partial);
-        case LogStatus.partial:
           await api.clearLog(widget.habit.id, date);
       }
       await refreshHabitMarks(ref, widget.habit.id, day: day);
@@ -348,11 +346,6 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
                           color: color,
                           filled: true,
                           label: l.statusDone,
-                        ),
-                        _LegendDot(
-                          color: color,
-                          filled: false,
-                          label: l.statusPartial,
                         ),
                         _LegendDot(
                           color: color,
@@ -684,21 +677,6 @@ class _NotebookState extends State<_Notebook> {
                               ? widget.color
                               : widget.color.withValues(alpha: 0.7),
                           emptyColor: _Notebook.ink,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 30,
-                      child: Text(
-                        '${m.done}',
-                        textAlign: TextAlign.right,
-                        style: TextStyle(
-                          color: m.month == nowKey
-                              ? widget.color
-                              : _Notebook.ink,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 15,
                         ),
                       ),
                     ),

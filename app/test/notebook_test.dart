@@ -132,9 +132,15 @@ void main() {
         _month(now, 35),
         _month(ago(1), 52),
       ]);
-      double top(String t) => tester.getTopLeft(find.text(t)).dy;
-      expect(top('35'), lessThan(top('52')));
-      expect(top('52'), lessThan(top('41')));
+      // Las rayitas, de arriba hacia abajo, deben ir del mes más reciente al más antiguo.
+      final rows =
+          tester.widgetList<TallyMarks>(find.byType(TallyMarks)).toList()..sort(
+            (a, b) => tester
+                .getTopLeft(find.byWidget(a))
+                .dy
+                .compareTo(tester.getTopLeft(find.byWidget(b)).dy),
+          );
+      expect(rows.map((r) => r.tally.total), [35, 52, 41]);
     },
   );
 

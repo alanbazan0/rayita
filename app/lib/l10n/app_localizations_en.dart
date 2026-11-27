@@ -111,7 +111,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nextMonth => 'Next month';
 
   @override
-  String get tapDayHint => 'Tap a day to mark it: done, partial or none.';
+  String get tapDayHint =>
+      'Tap a day to mark it as done, or tap again to clear it.';
 
   @override
   String get currentStreak => 'Current streak';
@@ -137,17 +138,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String partialCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count partial',
-      one: '1 partial',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get noMarks => 'No marks';
 
   @override
@@ -166,9 +156,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statusDone => 'done';
-
-  @override
-  String get statusPartial => 'partial';
 
   @override
   String get weekdayInitials => 'M,T,W,T,F,S,S';

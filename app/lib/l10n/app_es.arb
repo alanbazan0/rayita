@@ -46,21 +46,13 @@
   },
   "previousMonth": "Mes anterior",
   "nextMonth": "Mes siguiente",
-  "tapDayHint": "Toca un día para marcarlo: cumplido, parcial o sin marca.",
+  "tapDayHint": "Toca un día para marcarlo como cumplido, o tócalo de nuevo para quitarlo.",
   "currentStreak": "Racha actual",
   "longestStreak": "Racha más larga",
   "thisMonth": "Este mes",
   "total": "Total",
   "doneCount": "{count, plural, =1{1 cumplido} other{{count} cumplidos}}",
   "@doneCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "partialCount": "{count, plural, =1{1 parcial} other{{count} parciales}}",
-  "@partialCount": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -78,7 +70,6 @@
   },
   "statusNone": "sin marca",
   "statusDone": "cumplido",
-  "statusPartial": "parcial",
   "weekdayInitials": "L,M,M,J,V,S,D",
   "errorConnection": "No se pudo conectar con el servidor.",
   "errorUnexpected": "Ocurrió un error inesperado.",

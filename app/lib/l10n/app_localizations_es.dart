@@ -112,7 +112,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tapDayHint =>
-      'Toca un día para marcarlo: cumplido, parcial o sin marca.';
+      'Toca un día para marcarlo como cumplido, o tócalo de nuevo para quitarlo.';
 
   @override
   String get currentStreak => 'Racha actual';
@@ -138,17 +138,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String partialCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count parciales',
-      one: '1 parcial',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get noMarks => 'Sin marcas';
 
   @override
@@ -167,9 +156,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get statusDone => 'cumplido';
-
-  @override
-  String get statusPartial => 'parcial';
 
   @override
   String get weekdayInitials => 'L,M,M,J,V,S,D';

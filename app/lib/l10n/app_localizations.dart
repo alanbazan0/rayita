@@ -293,7 +293,7 @@ abstract class AppLocalizations {
   /// No description provided for @tapDayHint.
   ///
   /// In es, this message translates to:
-  /// **'Toca un día para marcarlo: cumplido, parcial o sin marca.'**
+  /// **'Toca un día para marcarlo como cumplido, o tócalo de nuevo para quitarlo.'**
   String get tapDayHint;
 
   /// No description provided for @currentStreak.
@@ -326,12 +326,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 cumplido} other{{count} cumplidos}}'**
   String doneCount(int count);
 
-  /// No description provided for @partialCount.
-  ///
-  /// In es, this message translates to:
-  /// **'{count, plural, =1{1 parcial} other{{count} parciales}}'**
-  String partialCount(int count);
-
   /// No description provided for @noMarks.
   ///
   /// In es, this message translates to:
@@ -355,12 +349,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'cumplido'**
   String get statusDone;
-
-  /// No description provided for @statusPartial.
-  ///
-  /// In es, this message translates to:
-  /// **'parcial'**
-  String get statusPartial;
 
   /// No description provided for @weekdayInitials.
   ///

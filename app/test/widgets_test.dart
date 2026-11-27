@@ -58,7 +58,7 @@ void main() {
     tester,
   ) async {
     DateTime? tapped;
-    LogStatus? current = LogStatus.partial;
+    LogStatus? current;
     await tester.pumpWidget(
       wrap(
         MonthCalendar(

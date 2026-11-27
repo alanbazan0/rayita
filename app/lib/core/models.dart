@@ -175,7 +175,8 @@ class GoalProgress {
   );
 }
 
-enum LogStatus { done, partial }
+/// Un día solo puede estar cumplido o sin marca. (El estado "parcial" ya no existe.)
+enum LogStatus { done }
 
 class HabitLog {
   const HabitLog({
@@ -191,7 +192,7 @@ class HabitLog {
   factory HabitLog.fromJson(Map<String, dynamic> j) => HabitLog(
     habitId: j['habit_id'] as int,
     date: j['date'] as String,
-    status: j['status'] == 'partial' ? LogStatus.partial : LogStatus.done,
+    status: LogStatus.done,
   );
 }
 
@@ -237,7 +238,6 @@ class HabitStats {
     required this.currentStreak,
     required this.longestStreak,
     required this.monthDone,
-    required this.monthPartial,
     required this.monthTally,
     required this.totalDone,
     required this.totalTally,
@@ -249,7 +249,6 @@ class HabitStats {
   final int currentStreak;
   final int longestStreak;
   final int monthDone;
-  final int monthPartial;
   final Tally monthTally;
   final int totalDone;
   final Tally totalTally;
@@ -269,7 +268,6 @@ class HabitStats {
       currentStreak: j['current_streak'] as int,
       longestStreak: j['longest_streak'] as int,
       monthDone: month['done'] as int,
-      monthPartial: month['partial'] as int,
       monthTally: Tally.fromJson(month['tally'] as Map<String, dynamic>),
       totalDone: total['done'] as int,
       totalTally: Tally.fromJson(total['tally'] as Map<String, dynamic>),

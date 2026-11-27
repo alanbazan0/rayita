@@ -7,8 +7,7 @@ import '../core/models.dart';
 import '../core/theme.dart';
 
 /// Calendario mensual de un hábito. Toca un día para alternar
-/// sin marca → cumplido → parcial → sin marca.
-/// Cumplido = círculo lleno; parcial = círculo con borde y tinte.
+/// sin marca → cumplido → sin marca. Cumplido = círculo lleno.
 class MonthCalendar extends StatelessWidget {
   const MonthCalendar({
     super.key,
@@ -91,13 +90,8 @@ class MonthCalendar extends StatelessWidget {
     final isFuture = key.compareTo(todayKey) > 0;
     final isActive = activeDays.contains(date.weekday);
     final done = status == LogStatus.done;
-    final partial = status == LogStatus.partial;
 
-    final statusText = status == null
-        ? l.statusNone
-        : done
-        ? l.statusDone
-        : l.statusPartial;
+    final statusText = done ? l.statusDone : l.statusNone;
 
     return Semantics(
       button: true,
@@ -128,15 +122,7 @@ class MonthCalendar extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: done
-                      ? color
-                      : partial
-                      ? color.withValues(alpha: 0.18)
-                      : null,
-                  border: Border.all(
-                    color: partial ? color : Colors.transparent,
-                    width: 2,
-                  ),
+                  color: done ? color : null,
                 ),
                 child: Text(
                   '$day',

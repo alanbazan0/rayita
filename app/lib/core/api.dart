@@ -259,7 +259,10 @@ class Api {
       queryParameters: {'month': month, 'habit_id': habitId},
     );
     return (res.data['data'] as List)
-        .map((e) => HabitLog.fromJson(e as Map<String, dynamic>))
+        .cast<Map<String, dynamic>>()
+        // Marcas "parcial" de antes: ya no existen, un servidor viejo aún las manda.
+        .where((e) => e['status'] == null || e['status'] == 'done')
+        .map(HabitLog.fromJson)
         .toList();
   }
 

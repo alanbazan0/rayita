@@ -46,15 +46,7 @@ void main() {
     expect(s.totalTally.total, 8);
   });
 
-  test('HabitLog.fromJson distingue parcial', () {
-    expect(
-      HabitLog.fromJson({
-        'habit_id': 1,
-        'date': '2026-11-01',
-        'status': 'partial',
-      }).status,
-      LogStatus.partial,
-    );
+  test('HabitLog.fromJson: toda marca es un día cumplido', () {
     expect(
       HabitLog.fromJson({'habit_id': 1, 'date': '2026-11-01', 'status': 'done'})
           .status,
