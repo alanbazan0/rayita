@@ -8,6 +8,7 @@ class User {
     this.emailVerified = false,
     this.createdAt,
     this.adsRemoved = false,
+    this.avatarUrl,
   });
 
   final int id;
@@ -17,6 +18,9 @@ class User {
 
   /// El servidor ya validó con Google Play la compra de "quitar anuncios".
   final bool adsRemoved;
+
+  /// Foto de perfil de Google (solo si entró con Google); null si no hay.
+  final String? avatarUrl;
 
   /// Cuándo se creó la cuenta (hora local); null si el servidor no lo envía.
   final DateTime? createdAt;
@@ -28,6 +32,7 @@ class User {
     emailVerified: j['email_verified_at'] != null,
     createdAt: DateTime.tryParse(j['created_at'] as String? ?? '')?.toLocal(),
     adsRemoved: j['ads_removed'] == true,
+    avatarUrl: j['avatar_url'] as String?,
   );
 }
 

@@ -248,30 +248,7 @@ class _ProfileCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
-            width: 92,
-            height: 92,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              gradient: primaryGradient,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.35),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Text(
-              initial,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 40,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
+          _Avatar(user: user, initial: initial),
           const SizedBox(height: 16),
           Text(
             user.name,
@@ -453,6 +430,67 @@ class _RemoveAdsCardState extends ConsumerState<_RemoveAdsCard> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Foto de perfil de Google; si no hay, o no carga, la inicial sobre el degradado.
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.user, required this.initial});
+
+  final User user;
+  final String initial;
+
+  static const size = 92.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = Container(
+      key: const ValueKey('avatar-initial'),
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        gradient: primaryGradient,
+        shape: BoxShape.circle,
+      ),
+      child: Text(
+        initial,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 40,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+    final url = user.avatarUrl;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: url == null
+            ? fallback
+            : Image.network(
+                url,
+                key: const ValueKey('avatar-photo'),
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                // Mientras carga y si falla (sin red, foto retirada), se ve la inicial.
+                loadingBuilder: (_, child, progress) =>
+                    progress == null ? child : fallback,
+                errorBuilder: (_, _, _) => fallback,
+              ),
       ),
     );
   }
