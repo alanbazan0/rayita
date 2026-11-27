@@ -99,12 +99,25 @@ class AuthController extends Controller
         $user->forceFill([
             'google_id' => $user->google_id ?: $claims['sub'],
             'email_verified_at' => $user->email_verified_at ?? now(),
+            // La foto de Google puede cambiar: se refresca en cada inicio de sesión.
+            'avatar_url' => $this->avatarFrom($claims['picture'] ?? null) ?? $user->avatar_url,
         ])->save();
 
         return response()->json([
             'user' => $user,
             'token' => $user->createToken('app')->plainTextToken,
         ], $created ? 201 : 200);
+    }
+
+    /** Solo se acepta una URL https de las fotos de Google; cualquier otra cosa se ignora. */
+    private function avatarFrom(?string $url): ?string
+    {
+        if ($url === null || strlen($url) > 512 || ! str_starts_with($url, 'https://')) {
+            return null;
+        }
+        $host = parse_url($url, PHP_URL_HOST);
+
+        return is_string($host) && str_ends_with($host, '.googleusercontent.com') ? $url : null;
     }
 
     public function me(Request $request): JsonResponse
