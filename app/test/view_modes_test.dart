@@ -122,7 +122,7 @@ void main() {
     });
   }
 
-  for (final view in [HabitsView.cards, HabitsView.wide, HabitsView.compact]) {
+  for (final view in [HabitsView.wide, HabitsView.compact]) {
     testWidgets('${view.name}: los palitos siguen siendo lo principal', (
       tester,
     ) async {
@@ -133,15 +133,16 @@ void main() {
     });
   }
 
-  testWidgets('los palitos de la vista ancha son más grandes que en tarjetas', (
-    tester,
-  ) async {
-    await pump(tester, HabitsView.cards);
-    final cards = tester.getSize(find.byType(TallyMarks).at(1)).height;
-    await pump(tester, HabitsView.wide);
-    final wide = tester.getSize(find.byType(TallyMarks).at(1)).height;
-    expect(wide, greaterThan(cards));
-  });
+  testWidgets(
+    'los palitos de la vista ancha son más grandes que en tarjetas bajas',
+    (tester) async {
+      await pump(tester, HabitsView.compact);
+      final cards = tester.getSize(find.byType(TallyMarks).at(1)).height;
+      await pump(tester, HabitsView.wide);
+      final wide = tester.getSize(find.byType(TallyMarks).at(1)).height;
+      expect(wide, greaterThan(cards));
+    },
+  );
 
   testWidgets('los palitos de tarjetas bajas no bajan de un mínimo legible', (
     tester,
@@ -168,7 +169,7 @@ void main() {
   testWidgets('tarjetas y ancha: la primera fila completa se ve sin deslizar', (
     tester,
   ) async {
-    for (final view in [HabitsView.cards, HabitsView.wide]) {
+    for (final view in [HabitsView.wide, HabitsView.compact]) {
       await pump(tester, view);
       expect(
         cardOf(tester, 'No becarias').bottom,
@@ -181,7 +182,7 @@ void main() {
   testWidgets('en cada fila de la cuadrícula las tarjetas miden lo mismo', (
     tester,
   ) async {
-    for (final view in [HabitsView.cards, HabitsView.compact]) {
+    for (final view in [HabitsView.compact]) {
       await pump(tester, view);
       // Fila 1: "Abstinencia" (con meta y nombre largo) junto a "No becarias".
       expect(
@@ -217,7 +218,8 @@ void main() {
   testWidgets(
     'el resumen y el selector quedan fijos: solo se desliza la lista',
     (tester) async {
-      await pump(tester, HabitsView.cards);
+      // La vista ancha no cabe en pantalla: así hay algo que deslizar.
+      await pump(tester, HabitsView.wide);
       final summary = tester.getTopLeft(find.text('Cumplidos hoy')).dy;
       final selector = tester.getTopLeft(find.byTooltip('Vista de lista')).dy;
       final card = tester.getTopLeft(find.text('gym')).dy;
@@ -238,7 +240,7 @@ void main() {
   testWidgets('deslizar hacia abajo en la lista sigue recargando', (
     tester,
   ) async {
-    await pump(tester, HabitsView.cards);
+    await pump(tester, HabitsView.compact);
     await tester.fling(find.byType(ListView), const Offset(0, 300), 1000);
     await tester.pump();
     expect(find.byType(RefreshIndicator), findsOneWidget);
@@ -246,12 +248,12 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('el selector tiene las cuatro vistas y recuerda la elegida', (
+  testWidgets('el selector tiene las tres vistas y recuerda la elegida', (
     tester,
   ) async {
-    await pump(tester, HabitsView.cards);
+    await pump(tester, HabitsView.compact);
+    expect(find.byTooltip('Vista de tarjetas'), findsNothing);
     for (final tip in [
-      'Vista de tarjetas',
       'Vista de tarjetas anchas',
       'Vista de tarjetas bajas',
       'Vista de lista',
@@ -287,8 +289,8 @@ void main() {
       await pump(tester, HabitsView.list);
       expect(find.byTooltip('Marcar hoy'), findsNWidgets(4));
       SharedPreferences.setMockInitialValues({'habits_view': 'algo_raro'});
-      // Un valor desconocido cae en tarjetas, la vista por defecto.
-      await pump(tester, HabitsView.cards);
+      // Un valor desconocido cae en tarjetas bajas, la vista por defecto.
+      await pump(tester, HabitsView.compact);
       expect(tester.takeException(), isNull);
     },
   );

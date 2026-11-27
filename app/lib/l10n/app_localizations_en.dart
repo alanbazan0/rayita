@@ -410,9 +410,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Check off each day, watch your tally marks grow and build habits that last.';
 
   @override
-  String get viewCards => 'Cards view';
-
-  @override
   String get viewList => 'List view';
 
   @override

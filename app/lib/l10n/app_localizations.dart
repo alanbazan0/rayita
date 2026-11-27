@@ -722,12 +722,6 @@ abstract class AppLocalizations {
   /// **'Marca cada día, mira crecer tus rayitas y construye hábitos que duran.'**
   String get welcomeSubtitle;
 
-  /// No description provided for @viewCards.
-  ///
-  /// In es, this message translates to:
-  /// **'Vista de tarjetas'**
-  String get viewCards;
-
   /// No description provided for @viewList.
   ///
   /// In es, this message translates to:

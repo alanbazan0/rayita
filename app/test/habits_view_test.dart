@@ -121,7 +121,7 @@ void main() {
     expect(find.byKey(const Key('banner')), findsNothing);
   });
 
-  testWidgets('por defecto se ven tarjetas', (tester) async {
+  testWidgets('por defecto se ven las tarjetas bajas', (tester) async {
     await pumpHome(tester);
     expect(find.text('Leer'), findsOneWidget);
     expect(find.text('días de racha'), findsWidgets);
@@ -143,12 +143,12 @@ void main() {
       'list',
     );
 
-    await tester.tap(find.byTooltip('Vista de tarjetas'));
+    await tester.tap(find.byTooltip('Vista de tarjetas bajas'));
     await tester.pumpAndSettle();
     expect(find.text('días de racha'), findsWidgets);
     expect(
       (await SharedPreferences.getInstance()).getString('habits_view'),
-      'cards',
+      'compact',
     );
   });
 
@@ -241,7 +241,7 @@ void main() {
     addTearDown(c.dispose);
     c.read(viewModeProvider);
     await Future<void>.delayed(Duration.zero);
-    expect(c.read(viewModeProvider), HabitsView.cards);
+    expect(c.read(viewModeProvider), HabitsView.compact);
   });
 
   testWidgets('el ícono de Cuenta abre la pantalla de cuenta', (tester) async {
@@ -257,5 +257,28 @@ void main() {
     expect(find.byType(AccountScreen), findsOneWidget);
     expect(find.text('Ana'), findsWidgets);
     expect(api.deletedEmails, isEmpty);
+  });
+
+  test(
+    'quien tenía guardada la vista de tarjetas altas pasa a las bajas',
+    () async {
+      // Esa vista ya no existe; su nombre guardado cae en la vista por defecto.
+      SharedPreferences.setMockInitialValues({'habits_view': 'cards'});
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
+      c.read(viewModeProvider);
+      await Future<void>.delayed(Duration.zero);
+      expect(c.read(viewModeProvider), HabitsView.compact);
+    },
+  );
+
+  testWidgets('el selector tiene tres vistas: anchas, bajas y lista', (
+    tester,
+  ) async {
+    await pumpHome(tester);
+    expect(find.byTooltip('Vista de tarjetas anchas'), findsOneWidget);
+    expect(find.byTooltip('Vista de tarjetas bajas'), findsOneWidget);
+    expect(find.byTooltip('Vista de lista'), findsOneWidget);
+    expect(find.byTooltip('Vista de tarjetas'), findsNothing);
   });
 }

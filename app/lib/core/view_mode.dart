@@ -4,15 +4,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 const _prefsKey = 'habits_view';
 
 /// Cómo se muestran los hábitos en la pantalla principal:
-/// tarjetas, tarjetas anchas (una por fila), tarjetas bajas y lista.
-enum HabitsView { cards, wide, compact, list }
+/// tarjetas anchas (una por fila), tarjetas bajas (la vista por defecto) y lista.
+/// Una preferencia guardada antes con otro nombre (la vista de tarjetas altas,
+/// que ya no existe) cae en la vista por defecto.
+enum HabitsView { wide, compact, list }
 
 /// Vista elegida por el usuario; se recuerda entre sesiones.
 class ViewModeNotifier extends Notifier<HabitsView> {
   @override
   HabitsView build() {
     _load();
-    return HabitsView.cards;
+    return HabitsView.compact;
   }
 
   Future<void> _load() async {
@@ -23,7 +25,7 @@ class ViewModeNotifier extends Notifier<HabitsView> {
       final view = HabitsView.values.where((v) => v.name == saved).firstOrNull;
       if (view != null) state = view;
     } catch (_) {
-      // Sin almacenamiento: se queda en tarjetas.
+      // Sin almacenamiento: se queda en la vista por defecto.
     }
   }
 

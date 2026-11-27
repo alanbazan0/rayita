@@ -253,12 +253,9 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                                     LayoutBuilder(
                                       builder: (context, c) {
                                         const gap = 14.0;
-                                        final dense =
-                                            view == HabitsView.compact;
-                                        final cols =
-                                            (c.maxWidth / (dense ? 170 : 190))
-                                                .floor()
-                                                .clamp(2, 6);
+                                        final cols = (c.maxWidth / (170))
+                                            .floor()
+                                            .clamp(2, 6);
                                         // Por filas: cada fila iguala la altura de sus
                                         // tarjetas (un nombre de 2 líneas no deja una más alta).
                                         return Column(
@@ -296,7 +293,6 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                                                                   habit:
                                                                       list[start +
                                                                           j],
-                                                                  dense: dense,
                                                                 ),
                                                               )
                                                             : const SizedBox.shrink(),
@@ -306,11 +302,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                                                 ),
                                               ),
                                               if (start + cols < list.length)
-                                                SizedBox(
-                                                  height: dense
-                                                      ? gap + 10
-                                                      : gap + 16,
-                                                ),
+                                                SizedBox(height: gap + 10),
                                             ],
                                           ],
                                         );
@@ -485,7 +477,7 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-/// Un botón por vista (tarjetas, anchas, bajas y lista); el activo va relleno.
+/// Un botón por vista (anchas, bajas y lista); el activo va relleno.
 class _ViewToggle extends StatelessWidget {
   const _ViewToggle({required this.view, required this.onChanged});
 
@@ -534,7 +526,6 @@ class _ViewToggle extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          button(HabitsView.cards, Icons.grid_view_rounded, l.viewCards),
           button(HabitsView.wide, Icons.view_agenda_rounded, l.viewWide),
           button(HabitsView.compact, Icons.view_module_rounded, l.viewCompact),
           button(HabitsView.list, Icons.view_list_rounded, l.viewList),
@@ -925,12 +916,11 @@ class _CheckButton extends ConsumerWidget {
 }
 
 /// Tarjeta de hábito con degradado de su color y una esquina grande redondeada.
-/// Con [dense] es más baja (vista de tarjetas bajas) y mantiene los palitos.
+/// Es baja a propósito (caben los hábitos sin deslizar) y mantiene los palitos.
 class _HabitCard extends ConsumerWidget {
-  const _HabitCard({required this.habit, this.dense = false});
+  const _HabitCard({required this.habit});
 
   final Habit habit;
-  final bool dense;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -941,11 +931,11 @@ class _HabitCard extends ConsumerWidget {
     final l = context.l10n;
     final streak = stats.value?.currentStreak ?? 0;
 
-    final badge = dense ? 46.0 : 56.0;
-    final pad = dense ? 12.0 : 16.0;
+    final badge = 46.0;
+    final pad = 12.0;
     // Misma altura para todas las tarjetas de una cuadrícula, con o sin meta:
     // si no, las filas quedan dispares.
-    final progressH = dense ? 60.0 : 80.0;
+    final progressH = 60.0;
 
     final card = Container(
       decoration: _cardDecoration(color),
@@ -978,32 +968,29 @@ class _HabitCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Hueco del ícono que sobresale.
-                    SizedBox(height: dense ? 34 : 46),
+                    SizedBox(height: 34),
                     Text(
                       habit.name,
-                      maxLines: dense ? 1 : 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
-                        fontSize: dense ? 15 : 17,
+                        fontSize: 15,
                         height: 1.15,
                       ),
                     ),
-                    SizedBox(height: dense ? 6 : 8),
+                    SizedBox(height: 6),
                     SizedBox(
                       height: progressH,
                       child: stats.maybeWhen(
-                        data: (s) => _CardProgress(
-                          stats: s,
-                          tallyHeight: dense ? 16 : 22,
-                        ),
+                        data: (s) => _CardProgress(stats: s, tallyHeight: 16),
                         orElse: () => const SizedBox.shrink(),
                       ),
                     ),
                     // El sobrante de una tarjeta más baja que su vecina va aquí.
                     const Spacer(),
-                    SizedBox(height: dense ? 6 : 8),
+                    SizedBox(height: 6),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -1016,7 +1003,7 @@ class _HabitCard extends ConsumerWidget {
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w800,
-                                  fontSize: dense ? 26 : 34,
+                                  fontSize: 26,
                                   height: 1,
                                 ),
                               ),
@@ -1027,13 +1014,13 @@ class _HabitCard extends ConsumerWidget {
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.85),
                                   fontWeight: FontWeight.w700,
-                                  fontSize: dense ? 11 : 12,
+                                  fontSize: 11,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        _CheckButton(habit: habit, size: dense ? 38 : 46),
+                        _CheckButton(habit: habit, size: 38),
                       ],
                     ),
                   ],
