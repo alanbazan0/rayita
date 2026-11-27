@@ -217,96 +217,30 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                                       const SizedBox(height: 12),
                                     ]
                                   else if (view == HabitsView.wide)
-                                    LayoutBuilder(
-                                      builder: (context, c) {
-                                        const gap = 14.0;
-                                        // Una por fila en el teléfono; más ancho, 2 o 3 columnas.
-                                        final cols = (c.maxWidth / 420)
-                                            .floor()
-                                            .clamp(1, 3);
-                                        final w =
-                                            (c.maxWidth - gap * (cols - 1)) /
-                                            cols;
-                                        return Wrap(
-                                          spacing: gap,
-                                          runSpacing: gap,
-                                          children: [
-                                            for (
-                                              var i = 0;
-                                              i < list.length;
-                                              i++
-                                            )
-                                              FadeSlideIn(
-                                                index: i + 1,
-                                                child: SizedBox(
-                                                  width: w,
-                                                  child: _HabitWideCard(
-                                                    habit: list[i],
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        );
-                                      },
-                                    )
+                                    // Un hábito por renglón, siempre (también en pantallas
+                                    // anchas): así los palitos tienen todo el ancho.
+                                    for (var i = 0; i < list.length; i++) ...[
+                                      FadeSlideIn(
+                                        index: i + 1,
+                                        child: _HabitWideCard(habit: list[i]),
+                                      ),
+                                      const SizedBox(height: 14),
+                                    ]
                                   else
                                     LayoutBuilder(
-                                      builder: (context, c) {
-                                        const gap = 14.0;
-                                        final cols = (c.maxWidth / (170))
-                                            .floor()
-                                            .clamp(2, 6);
-                                        // Por filas: cada fila iguala la altura de sus
-                                        // tarjetas (un nombre de 2 líneas no deja una más alta).
-                                        return Column(
-                                          children: [
-                                            for (
-                                              var start = 0;
-                                              start < list.length;
-                                              start += cols
-                                            ) ...[
-                                              IntrinsicHeight(
-                                                child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment
-                                                          .stretch,
-                                                  children: [
-                                                    for (
-                                                      var j = 0;
-                                                      j < cols;
-                                                      j++
-                                                    ) ...[
-                                                      if (j > 0)
-                                                        const SizedBox(
-                                                          width: gap,
-                                                        ),
-                                                      Expanded(
-                                                        child:
-                                                            start + j <
-                                                                list.length
-                                                            ? FadeSlideIn(
-                                                                index:
-                                                                    start +
-                                                                    j +
-                                                                    1,
-                                                                child: _HabitCard(
-                                                                  habit:
-                                                                      list[start +
-                                                                          j],
-                                                                ),
-                                                              )
-                                                            : const SizedBox.shrink(),
-                                                      ),
-                                                    ],
-                                                  ],
-                                                ),
-                                              ),
-                                              if (start + cols < list.length)
-                                                SizedBox(height: gap + 10),
-                                            ],
-                                          ],
-                                        );
-                                      },
+                                      builder: (context, c) => _EqualRows(
+                                        count: list.length,
+                                        cols: (c.maxWidth / 170).floor().clamp(
+                                          2,
+                                          6,
+                                        ),
+                                        gap: 14,
+                                        rowGap: 24,
+                                        builder: (i) => FadeSlideIn(
+                                          index: i + 1,
+                                          child: _HabitCard(habit: list[i]),
+                                        ),
+                                      ),
                                     ),
                                 ],
                               ),
@@ -344,6 +278,50 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
         ).showSnackBar(SnackBar(content: Text(errorMessage(e, context.l10n))));
       }
     }
+  }
+}
+
+/// Cuadrícula por filas: cada fila iguala la altura de sus tarjetas, así un nombre
+/// de dos líneas o una barra de meta no deja una más alta que su vecina.
+class _EqualRows extends StatelessWidget {
+  const _EqualRows({
+    required this.count,
+    required this.cols,
+    required this.gap,
+    required this.rowGap,
+    required this.builder,
+  });
+
+  final int count;
+  final int cols;
+  final double gap;
+  final double rowGap;
+  final Widget Function(int index) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (var start = 0; start < count; start += cols) ...[
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var j = 0; j < cols; j++) ...[
+                  if (j > 0) SizedBox(width: gap),
+                  Expanded(
+                    child: start + j < count
+                        ? builder(start + j)
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (start + cols < count) SizedBox(height: rowGap),
+        ],
+      ],
+    );
   }
 }
 
@@ -477,7 +455,7 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-/// Un botón por vista (anchas, bajas y lista); el activo va relleno.
+/// Un botón por vista (bajas, anchas y lista); el activo va relleno.
 class _ViewToggle extends StatelessWidget {
   const _ViewToggle({required this.view, required this.onChanged});
 
@@ -526,8 +504,8 @@ class _ViewToggle extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          button(HabitsView.wide, Icons.view_agenda_rounded, l.viewWide),
           button(HabitsView.compact, Icons.view_module_rounded, l.viewCompact),
+          button(HabitsView.wide, Icons.view_agenda_rounded, l.viewWide),
           button(HabitsView.list, Icons.view_list_rounded, l.viewList),
         ],
       ),

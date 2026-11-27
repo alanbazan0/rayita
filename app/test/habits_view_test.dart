@@ -281,4 +281,18 @@ void main() {
     expect(find.byTooltip('Vista de lista'), findsOneWidget);
     expect(find.byTooltip('Vista de tarjetas'), findsNothing);
   });
+
+  testWidgets('las tarjetas bajas son la primera vista del selector', (
+    tester,
+  ) async {
+    await pumpHome(tester);
+    final low = tester.getTopLeft(find.byTooltip('Vista de tarjetas bajas')).dx;
+    final wide = tester
+        .getTopLeft(find.byTooltip('Vista de tarjetas anchas'))
+        .dx;
+    final list = tester.getTopLeft(find.byTooltip('Vista de lista')).dx;
+    expect(low, lessThan(wide));
+    expect(wide, lessThan(list));
+    expect(HabitsView.values.first, HabitsView.compact);
+  });
 }

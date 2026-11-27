@@ -93,12 +93,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// La vista ancha pone un hábito por renglón: necesita más alto para tenerlos todos.
+  Size phone(HabitsView view, {double width = 360, double height = 780}) =>
+      Size(width, view == HabitsView.wide ? 1800 : height);
+
   for (final view in HabitsView.values) {
     group('vista ${view.name}', () {
       testWidgets('muestra los cuatro hábitos y los checks, sin desbordar', (
         tester,
       ) async {
-        await pump(tester, view);
+        await pump(tester, view, size: phone(view));
         expect(tester.takeException(), isNull);
         expect(find.text('No becarias'), findsOneWidget);
         expect(find.text('gym'), findsOneWidget);
@@ -109,7 +113,7 @@ void main() {
       testWidgets('también en un teléfono muy angosto (320 dp)', (
         tester,
       ) async {
-        await pump(tester, view, size: const Size(320, 640));
+        await pump(tester, view, size: phone(view, width: 320, height: 640));
         expect(tester.takeException(), isNull);
         expect(find.text('No becarias'), findsOneWidget);
       });
@@ -126,7 +130,7 @@ void main() {
     testWidgets('${view.name}: los palitos siguen siendo lo principal', (
       tester,
     ) async {
-      await pump(tester, view);
+      await pump(tester, view, size: phone(view));
       // Dos hábitos tienen marcas este mes; los otros dicen "Sin marcas".
       expect(find.byType(TallyMarks), findsNWidgets(4));
       expect(find.text('Sin marcas'), findsNWidgets(2));
@@ -198,6 +202,35 @@ void main() {
       );
     }
   });
+
+  testWidgets(
+    'vista ancha: un hábito por renglón, también en pantalla grande',
+    (tester) async {
+      for (final size in [
+        const Size(360, 1800),
+        const Size(900, 1800),
+        const Size(1400, 1800),
+      ]) {
+        await pump(tester, HabitsView.wide, size: size);
+        final first = cardOf(
+          tester,
+          'Abstinencia con un nombre bastante largo',
+        );
+        final second = cardOf(tester, 'No becarias');
+        expect(
+          second.top,
+          greaterThan(first.bottom),
+          reason: 'apiladas en $size',
+        );
+        expect(
+          second.left,
+          first.left,
+          reason: 'mismo borde izquierdo en $size',
+        );
+        expect(second.width, first.width, reason: 'mismo ancho en $size');
+      }
+    },
+  );
 
   testWidgets('tarjetas bajas: las 4 miden igual, con meta o sin ella', (
     tester,
