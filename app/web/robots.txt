@@ -6,4 +6,6 @@ Allow: /privacy
 Allow: /terms
 Allow: /eliminar-cuenta
 Allow: /delete-account
+# AdMob lee este archivo para verificar a los vendedores de anuncios de la app.
+Allow: /app-ads.txt
 Disallow: /

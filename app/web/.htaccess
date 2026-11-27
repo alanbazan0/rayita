@@ -19,6 +19,10 @@
   <FilesMatch "^(privacidad|terminos|privacy|terms|eliminar-cuenta|delete-account)\.html$">
     Header unset X-Robots-Tag
   </FilesMatch>
+  # app-ads.txt lo consulta el rastreador de AdMob: nada de noindex ahí.
+  <Files "app-ads.txt">
+    Header unset X-Robots-Tag
+  </Files>
 
   # Estos archivos no llevan hash en el nombre; "no-store" evita que Chrome
   # se quede con una versión vieja después de un despliegue.
